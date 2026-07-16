@@ -1,1 +1,199 @@
-/* You can add global styles to this file, and also import other style files */
+/* ═══════════════════════════════════════════════════════
+   PINTA — styles.scss (v2 · minimalismo estilo Apple)
+   Fondo gris claro + cards blancas elevadas con sombra
+═══════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* Color — la profundidad no viene del color sino del
+     contraste fondo gris ↔ superficie blanca + sombra */
+  --p-bg:      #F5F5F7;   /* gris Apple — fondo de página */
+  --p-surface: #FFFFFF;   /* cards, nav, paneles */
+  --p-text:    #1D1D1F;   /* casi negro Apple */
+  --p-text-2:  #6E6E73;   /* gris secundario */
+  --p-border:  #E8E8ED;   /* borde frío muy claro */
+  --p-hover:   #FAFAFC;
+
+  /* Tipografía — una sola familia, jerarquía por peso
+     y tracking apretado (el gesto tipográfico de Apple) */
+  --p-font: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+
+  /* Forma — radios generosos y sombras en capas */
+  --p-radius: 18px;
+  --p-radius-sm: 12px;
+  --p-shadow-card:
+    0 1px 2px rgba(0, 0, 0, .03),
+    0 4px 12px rgba(0, 0, 0, .04),
+    0 12px 32px rgba(0, 0, 0, .05);
+  --p-shadow-hover:
+    0 2px 4px rgba(0, 0, 0, .04),
+    0 8px 20px rgba(0, 0, 0, .07),
+    0 24px 48px rgba(0, 0, 0, .10);
+  --p-ease: cubic-bezier(.22, .61, .36, 1);
+}
+
+/* ── Reset ── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--p-font);
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--p-bg);
+  color: var(--p-text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Tipografía ── */
+h1, h2, h3, h4 {
+  font-weight: 700;
+  letter-spacing: -.022em;   /* tracking negativo = look Apple */
+  line-height: 1.15;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; background: none; border: none; }
+img { max-width: 100%; display: block; }
+
+/* ── Accesibilidad ── */
+:focus-visible {
+  outline: 2px solid var(--p-text);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: var(--p-text);
+  color: #FFFFFF;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+/* ── Contenedor ── */
+.wrap {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-left: 40px;
+  padding-right: 40px;
+
+  @media (max-width: 1024px) {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+
+  @media (max-width: 640px) {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+
+/* ── Botones — pill, el gesto Apple ── */
+.btn-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--p-text);
+  color: #FFFFFF;
+  border-radius: 999px;
+  padding: 12px 28px;
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: transform .2s var(--p-ease), box-shadow .2s var(--p-ease), opacity .15s;
+
+  &:hover {
+    opacity: .9;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .18);
+  }
+
+  &:active { transform: translateY(0); }
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--p-surface);
+  border: 1px solid var(--p-border);
+  border-radius: 999px;
+  padding: 11px 22px;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: background .15s, box-shadow .2s var(--p-ease);
+
+  &:hover {
+    background: var(--p-surface);
+    box-shadow: var(--p-shadow-card);
+  }
+}
+
+/* ── Precios ── */
+.price-now {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+
+.price-old {
+  font-size: 12.5px;
+  color: var(--p-text-2);
+  text-decoration: line-through;
+  font-weight: 400;
+}
+
+/* ── Badges — vidrio esmerilado sobre la foto ── */
+.badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, .78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--p-text);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
+
+  &--oferta {
+    background: rgba(29, 29, 31, .82);
+    color: #FFFFFF;
+  }
+}
+
+/* ── Scrollbar ── */
+@media (min-width: 1024px) {
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: var(--p-bg); }
+  ::-webkit-scrollbar-thumb {
+    background: #D2D2D7;
+    border-radius: 8px;
+    border: 2px solid var(--p-bg);
+
+    &:hover { background: var(--p-text-2); }
+  }
+}

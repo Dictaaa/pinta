@@ -1,0 +1,93 @@
+<div class="home">
+
+  <!-- ══════════ HERO ══════════ -->
+  <section class="hero">
+    <p class="hero-kicker">Marketplace de moda colombiana</p>
+
+    <h1 class="hero-title">
+      Cada tienda de ropa,<br>
+      <span>con su propio lugar.</span>
+    </h1>
+
+    <p class="hero-sub">
+      PINTA reúne las tiendas de moda de Colombia en un solo sitio.
+      Cada tienda tiene su propia página y su propia dirección —
+      tú solo entras, eliges y compras protegido.
+    </p>
+
+    <div class="hero-actions">
+      <a class="btn-dark btn-lg" routerLink="/iniciar-sesion">Iniciar sesión</a>
+    </div>
+
+    <!-- La URL como protagonista visual -->
+    <div class="hero-url" aria-hidden="true">
+      <span class="url-lock">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+        </svg>
+      </span>
+      <span class="url-base">pinta.co/</span><span class="url-store">TuTienda</span>
+    </div>
+  </section>
+
+  <!-- ══════════ CÓMO FUNCIONA ══════════ -->
+  <section class="steps">
+    <h2 class="section-title">Así funciona</h2>
+
+    <div class="steps-grid">
+      @for (paso of pasos; track paso.numero) {
+        <article class="step-card">
+          <span class="step-num">{{ paso.numero }}</span>
+          <h3>{{ paso.titulo }}</h3>
+          <p>{{ paso.texto }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- ══════════ PARA TIENDAS ══════════ -->
+  <section class="stores">
+    <div class="stores-panel">
+      <div class="stores-text">
+        <p class="stores-kicker">¿Tienes una tienda?</p>
+        <h2>Vende con tu propia página, sin montar una web.</h2>
+        <ul class="stores-list">
+          @for (b of beneficiosTienda; track b) {
+            <li>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M5 13l4 4L19 7"/>
+              </svg>
+              {{ b }}
+            </li>
+          }
+        </ul>
+      </div>
+
+      <div class="stores-visual" aria-hidden="true">
+        <div class="mock-card">
+          <div class="mock-bar">
+            <span class="mock-dot"></span>
+            <span class="mock-dot"></span>
+            <span class="mock-dot"></span>
+            <span class="mock-url">pinta.co/ModaLuna</span>
+          </div>
+          <div class="mock-body">
+            <div class="mock-avatar">M</div>
+            <div class="mock-line w60"></div>
+            <div class="mock-line w40"></div>
+            <div class="mock-grid">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ CTA FINAL ══════════ -->
+  <section class="cta">
+    <h2>La moda colombiana, en un solo lugar.</h2>
+    <a class="btn-dark btn-lg" routerLink="/iniciar-sesion">Iniciar sesión</a>
+  </section>
+
+</div>

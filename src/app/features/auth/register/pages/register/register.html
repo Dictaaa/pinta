@@ -1,0 +1,108 @@
+<div class="auth-page">
+  <div class="auth-card">
+
+    <a routerLink="/" class="auth-logo">Pinta<span>.</span></a>
+
+    <h1>Crea tu tienda</h1>
+    <p class="auth-sub">Tu página propia en PINTA, lista en minutos.</p>
+
+    @if (error()) {
+      <p class="auth-error" role="alert">{{ error() }}</p>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+
+      <label class="field" [class.invalid]="campoInvalido('nombre')">
+        <span class="field-label">Tu nombre</span>
+        <input type="text" formControlName="nombre" placeholder="Nombre y apellido" autocomplete="name">
+        @if (campoInvalido('nombre')) {
+          <span class="field-hint">Mínimo 3 caracteres</span>
+        }
+      </label>
+
+      <label class="field" [class.invalid]="campoInvalido('email')">
+        <span class="field-label">Correo electrónico</span>
+        <input type="email" formControlName="email" placeholder="tu@correo.com" autocomplete="email">
+        @if (campoInvalido('email')) {
+          <span class="field-hint">Ingresa un correo válido</span>
+        }
+      </label>
+
+      <label class="field" [class.invalid]="campoInvalido('password')">
+        <span class="field-label">Contraseña</span>
+        <div class="field-password">
+          <input
+            [type]="verPassword() ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Mínimo 6 caracteres"
+            autocomplete="new-password">
+          <button
+            type="button"
+            class="toggle-pass"
+            (click)="verPassword.set(!verPassword())"
+            [attr.aria-label]="verPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+            @if (verPassword()) {
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M1 1l22 22"/></svg>
+            } @else {
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            }
+          </button>
+        </div>
+        @if (campoInvalido('password')) {
+          <span class="field-hint">Mínimo 6 caracteres</span>
+        }
+      </label>
+
+      <hr class="divider">
+
+      <label class="field" [class.invalid]="campoInvalido('nombreTienda') || slugOcupado()">
+        <span class="field-label">Nombre de tu tienda</span>
+        <input type="text" formControlName="nombreTienda" placeholder="Ej: Moda Luna">
+        @if (campoInvalido('nombreTienda')) {
+          <span class="field-hint">Mínimo 3 caracteres</span>
+        }
+      </label>
+
+      <!-- Vista previa de la URL — el momento del producto -->
+      @if (slug()) {
+        <div class="url-preview" [class.taken]="slugOcupado()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+          </svg>
+          <span>pinta.co/<b>{{ slug() }}</b></span>
+          @if (slugOcupado()) {
+            <span class="url-status">No disponible</span>
+          } @else {
+            <span class="url-status ok">✓ Disponible</span>
+          }
+        </div>
+      }
+
+      <label class="field" [class.invalid]="campoInvalido('ciudad')">
+        <span class="field-label">Ciudad de tu tienda</span>
+        <select formControlName="ciudad">
+          <option value="" disabled>Selecciona tu ciudad</option>
+          @for (c of ciudades; track c) {
+            <option [value]="c">{{ c }}</option>
+          }
+        </select>
+        @if (campoInvalido('ciudad')) {
+          <span class="field-hint">Selecciona tu ciudad</span>
+        }
+      </label>
+
+      <button type="submit" class="btn-submit" [disabled]="enviando()">
+        {{ enviando() ? 'Creando tu tienda…' : 'Crear mi tienda' }}
+      </button>
+
+      <p class="legal">
+        Al crear tu tienda aceptas los Términos y la Política de privacidad de PINTA.
+      </p>
+    </form>
+
+    <p class="auth-switch">
+      ¿Ya tienes cuenta?
+      <a routerLink="/iniciar-sesion">Inicia sesión</a>
+    </p>
+  </div>
+</div>

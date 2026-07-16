@@ -1,0 +1,284 @@
+$bg: var(--p-bg);
+$surface: var(--p-surface);
+$text: var(--p-text);
+$text-2: var(--p-text-2);
+$border: var(--p-border);
+$ease: var(--p-ease);
+
+/* ══════════════════════════════════════════════
+   EL STICKY VA EN EL HOST — no en .nav.
+   <app-topnav> es el elemento que vive en el flujo
+   del documento; .nav adentro no tiene dónde pegarse.
+══════════════════════════════════════════════ */
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* ══════════ BARRA ══════════ */
+.nav {
+  background: $bg;                       /* se funde con la página arriba */
+  transition: background .25s, box-shadow .25s, backdrop-filter .25s;
+
+  &--scrolled {
+    background: rgba(245, 245, 247, .8); /* vidrio iOS al hacer scroll */
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, .07);
+  }
+}
+
+.nav__inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 64px;
+}
+
+/* ══════════ MARCA ══════════ */
+.nav__logo {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: $text;
+  flex-shrink: 0;
+
+  span {
+    color: $text-2;
+    font-weight: 300;
+  }
+
+  &--compact {
+    font-size: 15px;
+    color: $text-2;
+    transition: color .15s;
+
+    &:hover { color: $text; }
+  }
+}
+
+.nav__brand--store {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.nav__sep {
+  color: $border;
+  font-size: 16px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.nav__store {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  color: $text;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav__verified {
+  flex-shrink: 0;
+  color: $text;
+}
+
+/* Título de página (dashboard) */
+.nav__page {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+}
+
+/* ══════════ HAMBURGUESA (dashboard) ══════════ */
+.nav__menu {
+  width: 40px;
+  height: 40px;
+  margin-left: -10px;   /* alinea el ícono con el borde del contenido */
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $text;
+  flex-shrink: 0;
+  transition: background .15s;
+
+  &:hover { background: rgba(0, 0, 0, .05); }
+}
+
+/* ══════════ BUSCADOR (compra) ══════════ */
+.nav__search {
+  flex: 1;
+  max-width: 420px;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 0, 0, .045);      /* campo iOS: sin borde */
+  border-radius: 999px;
+  padding: 0 16px;
+  height: 40px;
+  transition: background .2s, box-shadow .2s $ease;
+
+  &:focus-within {
+    background: $surface;
+    box-shadow: var(--p-shadow-card);
+  }
+
+  svg {
+    flex-shrink: 0;
+    color: $text-2;
+  }
+
+  input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 13.5px;
+    background: transparent;
+    color: $text;
+
+    &::placeholder { color: $text-2; }
+  }
+}
+
+/* ══════════ ACCIONES ══════════ */
+.nav__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;   /* siempre pegadas a la derecha, en todos los modos */
+}
+
+.nav__search + .nav__actions {
+  margin-left: 0;      /* cuando hay buscador, él ya empuja */
+}
+
+.nav__icon {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $text;
+  transition: background .15s;
+
+  &:hover { background: rgba(0, 0, 0, .05); }
+}
+
+.nav__badge {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: $text;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+  border: 2px solid $bg;
+  box-sizing: content-box;
+}
+
+/* CTA landing */
+.nav__cta {
+  display: inline-flex;
+  align-items: center;
+  background: $text;
+  color: #FFFFFF;
+  border-radius: 999px;
+  padding: 9px 22px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: transform .2s $ease, box-shadow .2s $ease, opacity .15s;
+
+  &:hover {
+    opacity: .9;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .18);
+  }
+}
+
+/* Avatar */
+.nav__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: $text;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13.5px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: transform .2s $ease, box-shadow .2s $ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .2);
+  }
+}
+
+/* ══════════ RESPONSIVE ══════════ */
+@media (max-width: 1024px) {
+  .nav__inner {
+    padding: 0 28px;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 640px) {
+  .nav__inner {
+    padding: 0 18px;
+    gap: 10px;
+    height: 58px;
+  }
+
+  .nav__logo {
+    font-size: 17px;
+
+    /* En modo tienda mobile queda solo el nombre de la tienda */
+    &--compact { display: none; }
+  }
+
+  .nav__brand--store .nav__sep { display: none; }
+
+  .nav__store { font-size: 14px; }
+
+  .nav__search {
+    max-width: none;
+    height: 38px;
+  }
+
+  .nav__icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .nav__cta {
+    padding: 8px 18px;
+    font-size: 12.5px;
+  }
+}

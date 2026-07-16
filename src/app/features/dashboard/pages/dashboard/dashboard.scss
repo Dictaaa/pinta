@@ -1,0 +1,241 @@
+$bg: var(--p-bg);
+$surface: var(--p-surface);
+$text: var(--p-text);
+$text-2: var(--p-text-2);
+$border: var(--p-border);
+$radius: var(--p-radius);
+$shadow: var(--p-shadow-card);
+$shadow-hover: var(--p-shadow-hover);
+$ease: var(--p-ease);
+
+:host {
+  display: block;
+}
+
+.dash {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 40px 88px;
+}
+
+/* ══════════ CABECERA ══════════ */
+.dash-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+
+  h1 { font-size: 26px; }
+}
+
+.dash-url {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-2;
+  transition: color .15s;
+
+  &:hover { color: $text; }
+}
+
+.dash-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-logout {
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-2;
+  padding: 11px 14px;
+  border-radius: 999px;
+  transition: background .15s, color .15s;
+
+  &:hover {
+    background: rgba(0, 0, 0, .05);
+    color: $text;
+  }
+}
+
+/* ══════════ KPIs ══════════ */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.kpi {
+  background: $surface;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: transform .3s $ease, box-shadow .3s $ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-hover;
+  }
+}
+
+.kpi-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: $text-2;
+}
+
+.kpi-valor {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -.025em;
+}
+
+.kpi-var {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2E7D4F;
+
+  &.down { color: $text; }
+  &.neutral {
+    color: $text-2;
+    font-weight: 500;
+  }
+}
+
+/* ══════════ PANEL ══════════ */
+.panel {
+  background: $surface;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  overflow: hidden;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid $border;
+
+  h2 { font-size: 16px; }
+}
+
+.link-all {
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-2;
+
+  &:hover { color: $text; }
+}
+
+/* ══════════ TABLA ══════════ */
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+th {
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: $text-2;
+  padding: 12px 24px;
+  border-bottom: 1px solid $border;
+  white-space: nowrap;
+}
+
+td {
+  padding: 15px 24px;
+  border-bottom: 1px solid $border;
+  vertical-align: middle;
+}
+
+tbody tr {
+  transition: background .12s;
+
+  &:hover { background: $bg; }
+  &:last-child td { border-bottom: none; }
+}
+
+.mono { font-weight: 600; }
+.muted { color: $text-2; }
+.num { text-align: right; }
+.strong { font-weight: 700; letter-spacing: -.01em; }
+
+.ellipsis {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.estado {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: $bg;
+  color: $text-2;
+
+  &[data-estado="Pendiente"] {
+    background: $text;
+    color: #FFFFFF;
+  }
+
+  &[data-estado="Enviado"] {
+    background: rgba(29, 29, 31, .08);
+    color: $text;
+  }
+
+  &[data-estado="Entregado"] {
+    background: rgba(46, 125, 79, .1);
+    color: #2E7D4F;
+  }
+}
+
+/* ══════════ RESPONSIVE ══════════ */
+@media (max-width: 1024px) {
+  .dash { padding: 24px 28px 64px; }
+
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .dash { padding: 18px 18px 56px; }
+
+  .dash-head {
+    flex-direction: column;
+
+    h1 { font-size: 22px; }
+  }
+
+  .dash-actions { width: 100%; }
+
+  .kpis {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .hide-sm { display: none; }
+
+  th, td {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

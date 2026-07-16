@@ -1,0 +1,84 @@
+@if (auth.usuario(); as u) {
+  <div class="dash">
+
+    <!-- ══════════ CABECERA ══════════ -->
+    <header class="dash-head">
+      <div>
+        <h1>Hola, {{ u.nombre }}</h1>
+        <a class="dash-url" [routerLink]="['/', u.tienda.slug]">
+          pinta.co/{{ u.tienda.slug }}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M7 17L17 7M8 7h9v9"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="dash-actions">
+        <button class="btn-outline">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          Nuevo producto
+        </button>
+        <button class="btn-logout" (click)="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <!-- ══════════ KPIs ══════════ -->
+    <div class="kpis">
+      @for (kpi of kpis; track kpi.label) {
+        <article class="kpi">
+          <span class="kpi-label">{{ kpi.label }}</span>
+          <span class="kpi-valor">{{ kpi.valor }}</span>
+          @if (kpi.variacion !== 0) {
+            <span class="kpi-var" [class.down]="kpi.variacion < 0">
+              {{ kpi.variacion > 0 ? '↑' : '↓' }} {{ kpi.variacion < 0 ? -kpi.variacion : kpi.variacion }}% vs mes anterior
+            </span>
+          } @else {
+            <span class="kpi-var neutral">Sin cambios</span>
+          }
+        </article>
+      }
+    </div>
+
+    <!-- ══════════ PEDIDOS RECIENTES ══════════ -->
+    <section class="panel">
+      <header class="panel-head">
+        <h2>Pedidos recientes</h2>
+        <button class="link-all">Ver todos</button>
+      </header>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Pedido</th>
+              <th>Cliente</th>
+              <th>Producto</th>
+              <th class="hide-sm">Talla</th>
+              <th class="num">Total</th>
+              <th>Estado</th>
+              <th class="hide-sm">Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of pedidos; track p.id) {
+              <tr>
+                <td class="mono">{{ p.id }}</td>
+                <td>{{ p.cliente }}</td>
+                <td class="ellipsis">{{ p.producto }}</td>
+                <td class="hide-sm">{{ p.talla }}</td>
+                <td class="num strong">{{ cop(p.total) }}</td>
+                <td>
+                  <span class="estado" [attr.data-estado]="p.estado">{{ p.estado }}</span>
+                </td>
+                <td class="hide-sm muted">{{ p.fecha }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+}

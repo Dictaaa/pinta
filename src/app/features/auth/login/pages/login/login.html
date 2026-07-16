@@ -1,0 +1,64 @@
+<div class="auth-page">
+  <div class="auth-card">
+
+    <a routerLink="/" class="auth-logo">Pinta<span>.</span></a>
+
+    <h1>Inicia sesión</h1>
+    <p class="auth-sub">Administra tu tienda desde un solo lugar.</p>
+
+    @if (error()) {
+      <p class="auth-error" role="alert">{{ error() }}</p>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="enviar()" novalidate>
+
+      <label class="field" [class.invalid]="campoInvalido('email')">
+        <span class="field-label">Correo electrónico</span>
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="tu@correo.com"
+          autocomplete="email">
+        @if (campoInvalido('email')) {
+          <span class="field-hint">Ingresa un correo válido</span>
+        }
+      </label>
+
+      <label class="field" [class.invalid]="campoInvalido('password')">
+        <span class="field-label">Contraseña</span>
+        <div class="field-password">
+          <input
+            [type]="verPassword() ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="••••••••"
+            autocomplete="current-password">
+          <button
+            type="button"
+            class="toggle-pass"
+            (click)="verPassword.set(!verPassword())"
+            [attr.aria-label]="verPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+            @if (verPassword()) {
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M1 1l22 22"/></svg>
+            } @else {
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            }
+          </button>
+        </div>
+        @if (campoInvalido('password')) {
+          <span class="field-hint">Mínimo 6 caracteres</span>
+        }
+      </label>
+
+      <button type="button" class="link-forgot">¿Olvidaste tu contraseña?</button>
+
+      <button type="submit" class="btn-submit" [disabled]="enviando()">
+        {{ enviando() ? 'Ingresando…' : 'Iniciar sesión' }}
+      </button>
+    </form>
+
+    <p class="auth-switch">
+      ¿Aún no tienes tienda en PINTA?
+      <a routerLink="/registro">Crea tu tienda</a>
+    </p>
+  </div>
+</div>

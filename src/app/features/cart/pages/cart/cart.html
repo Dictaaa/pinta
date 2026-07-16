@@ -1,0 +1,118 @@
+<div class="cart-page">
+
+  @if (cart.cantidad() === 0) {
+    <!-- ══════════ CARRITO VACÍO ══════════ -->
+    <div class="cart-empty">
+      <div class="empty-icon" aria-hidden="true">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+          <path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+      </div>
+      <p class="empty-title">Tu carrito está vacío</p>
+      <p class="empty-text">Explora las tiendas y guarda lo que te guste.</p>
+      <a class="btn-dark" routerLink="/">Explorar productos</a>
+    </div>
+
+  } @else {
+    <h1 class="cart-title">
+      Carrito
+      <span class="cart-count">{{ cart.cantidad() }} {{ cart.cantidad() === 1 ? 'producto' : 'productos' }}</span>
+    </h1>
+
+    <div class="cart-layout">
+
+      <!-- ══════════ GRUPOS POR TIENDA ══════════ -->
+      <div class="cart-groups">
+        @for (grupo of grupos(); track grupo.slug) {
+          <section class="group">
+            <header class="group-head">
+              <a class="group-store" [routerLink]="['/', grupo.slug]">
+                {{ grupo.nombre }}
+              </a>
+              <span class="group-shipping">Envío {{ cop(grupo.envio) }}</span>
+            </header>
+
+            @for (item of grupo.items; track item.productoId + '-' + item.talla) {
+              <div class="item">
+                <div class="item-media">
+                  <span class="ph-letter" aria-hidden="true">{{ item.nombre[0] }}</span>
+                  @if (item.imagen) {
+                    <img [src]="item.imagen" [alt]="item.nombre">
+                  }
+                </div>
+
+                <div class="item-info">
+                  <p class="item-name">{{ item.nombre }}</p>
+                  @if (item.talla) {
+                    <p class="item-size">Talla {{ item.talla }}</p>
+                  }
+                  <p class="item-unit">{{ cop(item.precio) }} c/u</p>
+                </div>
+
+                <div class="item-controls">
+                  <div class="qty" role="group" aria-label="Cantidad">
+                    <button (click)="menosCantidad(item)" aria-label="Menos">−</button>
+                    <span>{{ item.cantidad }}</span>
+                    <button (click)="masCantidad(item)" aria-label="Más">+</button>
+                  </div>
+
+                  <span class="item-total">{{ cop(item.precio * item.cantidad) }}</span>
+
+                  <button class="item-remove" (click)="quitar(item)" aria-label="Quitar del carrito">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                      <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            }
+
+            <footer class="group-foot">
+              Subtotal {{ grupo.nombre }}: <b>{{ cop(grupo.subtotal) }}</b>
+            </footer>
+          </section>
+        }
+      </div>
+
+      <!-- ══════════ RESUMEN ══════════ -->
+      <aside class="summary">
+        <h2>Resumen</h2>
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>{{ cop(cart.total()) }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Envíos ({{ grupos().length }} {{ grupos().length === 1 ? 'tienda' : 'tiendas' }})</span>
+          <span>{{ cop(totalEnvios()) }}</span>
+        </div>
+
+        <div class="summary-total">
+          <span>Total</span>
+          <span>{{ cop(totalGeneral()) }}</span>
+        </div>
+
+        <button class="btn-pay" (click)="pagar()">Ir a pagar</button>
+
+        <a class="link-continue" routerLink="/">Seguir comprando</a>
+
+        <ul class="trust">
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/>
+            </svg>
+            Pago protegido por PINTA
+          </li>
+          <li>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>
+            </svg>
+            Devolución hasta 30 días
+          </li>
+        </ul>
+      </aside>
+
+    </div>
+  }
+</div>
