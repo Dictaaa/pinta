@@ -1,0 +1,75 @@
+<!-- Overlay -->
+<div
+  class="overlay"
+  [class.overlay--open]="ui.sidebarAbierto()"
+  (click)="cerrar()"
+  aria-hidden="true">
+</div>
+
+<!-- Drawer -->
+<aside
+  class="sidebar"
+  [class.sidebar--open]="ui.sidebarAbierto()"
+  [attr.aria-hidden]="!ui.sidebarAbierto()"
+  aria-label="Menú del panel">
+
+  <!-- Cabecera: la tienda del usuario -->
+  <div class="sidebar__head">
+    @if (auth.usuario(); as u) {
+      <div class="sidebar__shop">
+        <div class="sidebar__shop-avatar">{{ u.tienda.nombre[0] }}</div>
+        <div class="sidebar__shop-info">
+          <span class="sidebar__shop-name">{{ u.tienda.nombre }}</span>
+          <span class="sidebar__shop-url">pinta.co/{{ u.tienda.slug }}</span>
+        </div>
+      </div>
+    }
+
+    <button class="sidebar__close" (click)="cerrar()" aria-label="Cerrar menú">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Navegación -->
+  <nav class="sidebar__nav" aria-label="Secciones del panel">
+    <a
+      routerLink="/dashboard"
+      routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="sidebar__link"
+      (click)="cerrar()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="3" y="3" width="7" height="9" rx="1.5"/>
+        <rect x="14" y="3" width="7" height="5" rx="1.5"/>
+        <rect x="14" y="12" width="7" height="9" rx="1.5"/>
+        <rect x="3" y="16" width="7" height="5" rx="1.5"/>
+      </svg>
+      Dashboard
+    </a>
+
+    <a
+      routerLink="/productos"
+      routerLinkActive="is-active"
+      class="sidebar__link"
+      (click)="cerrar()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M20.6 7.2L12 2 3.4 7.2v9.6L12 22l8.6-5.2z"/>
+        <path d="M3.4 7.2L12 12.4l8.6-5.2M12 12.4V22"/>
+      </svg>
+      Productos
+    </a>
+  </nav>
+
+  <!-- Pie: cerrar sesión -->
+  <div class="sidebar__foot">
+    <button class="sidebar__logout" (click)="cerrarSesion()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <path d="M16 17l5-5-5-5M21 12H9"/>
+      </svg>
+      Cerrar sesión
+    </button>
+  </div>
+</aside>

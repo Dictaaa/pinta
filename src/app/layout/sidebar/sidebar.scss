@@ -1,0 +1,174 @@
+$bg: var(--p-bg);
+$surface: var(--p-surface);
+$text: var(--p-text);
+$text-2: var(--p-text-2);
+$border: var(--p-border);
+$ease: var(--p-ease);
+
+/* ══════════ OVERLAY ══════════ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(29, 29, 31, .3);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s;
+
+  &--open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* ══════════ DRAWER ══════════ */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
+  width: min(300px, 86vw);
+  background: $surface;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-105%);
+  transition: transform .3s $ease;
+  box-shadow: var(--p-shadow-hover);
+
+  &--open {
+    transform: translateX(0);
+  }
+}
+
+/* ── Cabecera ── */
+.sidebar__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px;
+  border-bottom: 1px solid $border;
+}
+
+.sidebar__shop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.sidebar__shop-avatar {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: $bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.sidebar__shop-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sidebar__shop-name {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar__shop-url {
+  font-size: 11.5px;
+  color: $text-2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar__close {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $text-2;
+  transition: background .15s, color .15s;
+
+  &:hover {
+    background: $bg;
+    color: $text;
+  }
+}
+
+/* ── Navegación ── */
+.sidebar__nav {
+  flex: 1;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-2;
+  transition: background .15s, color .15s;
+
+  svg { flex-shrink: 0; }
+
+  &:hover {
+    background: $bg;
+    color: $text;
+  }
+
+  &.is-active {
+    background: $text;
+    color: #FFFFFF;
+    font-weight: 600;
+  }
+}
+
+/* ── Pie ── */
+.sidebar__foot {
+  padding: 14px 12px;
+  border-top: 1px solid $border;
+}
+
+.sidebar__logout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-2;
+  transition: background .15s, color .15s;
+
+  &:hover {
+    background: $bg;
+    color: $text;
+  }
+}

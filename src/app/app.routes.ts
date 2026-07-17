@@ -26,6 +26,13 @@ export const routes: Routes = [
     import('./features/dashboard/pages/dashboard/dashboard').then(m => m.Dashboard),
 },
 
+{
+      path: 'productos',
+      canActivate: [authGuard],
+      loadComponent: () =>
+        import('./features/product/pages/product/product').then(m => m.Product),
+    },
+
   // ── Rutas fijas — SIEMPRE antes de :slug ────────────
   {
     path: 'carrito',

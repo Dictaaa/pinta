@@ -1,3 +1,41 @@
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$magenta-palette,
+        tertiary: mat.$violet-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+  height: 100%;
+}
 /* ═══════════════════════════════════════════════════════
    PINTA — styles.scss (v2 · minimalismo estilo Apple)
    Fondo gris claro + cards blancas elevadas con sombra
@@ -7,12 +45,12 @@
 :root {
   /* Color — la profundidad no viene del color sino del
      contraste fondo gris ↔ superficie blanca + sombra */
-  --p-bg:      #F5F5F7;   /* gris Apple — fondo de página */
-  --p-surface: #FFFFFF;   /* cards, nav, paneles */
-  --p-text:    #1D1D1F;   /* casi negro Apple */
-  --p-text-2:  #6E6E73;   /* gris secundario */
-  --p-border:  #E8E8ED;   /* borde frío muy claro */
-  --p-hover:   #FAFAFC;
+  --p-bg: #f5f5f7; /* gris Apple — fondo de página */
+  --p-surface: #ffffff; /* cards, nav, paneles */
+  --p-text: #1d1d1f; /* casi negro Apple */
+  --p-text-2: #6e6e73; /* gris secundario */
+  --p-border: #e8e8ed; /* borde frío muy claro */
+  --p-hover: #fafafc;
 
   /* Tipografía — una sola familia, jerarquía por peso
      y tracking apretado (el gesto tipográfico de Apple) */
@@ -22,14 +60,10 @@
   --p-radius: 18px;
   --p-radius-sm: 12px;
   --p-shadow-card:
-    0 1px 2px rgba(0, 0, 0, .03),
-    0 4px 12px rgba(0, 0, 0, .04),
-    0 12px 32px rgba(0, 0, 0, .05);
+    0 1px 2px rgba(0, 0, 0, 0.03), 0 4px 12px rgba(0, 0, 0, 0.04), 0 12px 32px rgba(0, 0, 0, 0.05);
   --p-shadow-hover:
-    0 2px 4px rgba(0, 0, 0, .04),
-    0 8px 20px rgba(0, 0, 0, .07),
-    0 24px 48px rgba(0, 0, 0, .10);
-  --p-ease: cubic-bezier(.22, .61, .36, 1);
+    0 2px 4px rgba(0, 0, 0, 0.04), 0 8px 20px rgba(0, 0, 0, 0.07), 0 24px 48px rgba(0, 0, 0, 0.1);
+  --p-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 /* ── Reset ── */
@@ -41,7 +75,9 @@
   box-sizing: border-box;
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   font-family: var(--p-font);
@@ -54,21 +90,37 @@ body {
 }
 
 /* ── Tipografía ── */
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   font-weight: 700;
-  letter-spacing: -.022em;   /* tracking negativo = look Apple */
+  letter-spacing: -0.022em; /* tracking negativo = look Apple */
   line-height: 1.15;
 }
 
-button, input, select, textarea {
+button,
+input,
+select,
+textarea {
   font-family: inherit;
   font-size: inherit;
   color: inherit;
 }
 
-a { color: inherit; text-decoration: none; }
-button { cursor: pointer; background: none; border: none; }
-img { max-width: 100%; display: block; }
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+img {
+  max-width: 100%;
+  display: block;
+}
 
 /* ── Accesibilidad ── */
 :focus-visible {
@@ -79,15 +131,19 @@ img { max-width: 100%; display: block; }
 
 ::selection {
   background: var(--p-text);
-  color: #FFFFFF;
+  color: #ffffff;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    transition-duration: .01ms !important;
-    animation-duration: .01ms !important;
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
-  html { scroll-behavior: auto; }
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 /* ── Contenedor ── */
@@ -115,20 +171,25 @@ img { max-width: 100%; display: block; }
   justify-content: center;
   gap: 8px;
   background: var(--p-text);
-  color: #FFFFFF;
+  color: #ffffff;
   border-radius: 999px;
   padding: 12px 28px;
   font-size: 13.5px;
   font-weight: 600;
-  transition: transform .2s var(--p-ease), box-shadow .2s var(--p-ease), opacity .15s;
+  transition:
+    transform 0.2s var(--p-ease),
+    box-shadow 0.2s var(--p-ease),
+    opacity 0.15s;
 
   &:hover {
-    opacity: .9;
+    opacity: 0.9;
     transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, .18);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
   }
 
-  &:active { transform: translateY(0); }
+  &:active {
+    transform: translateY(0);
+  }
 }
 
 .btn-outline {
@@ -142,7 +203,9 @@ img { max-width: 100%; display: block; }
   padding: 11px 22px;
   font-size: 13.5px;
   font-weight: 500;
-  transition: background .15s, box-shadow .2s var(--p-ease);
+  transition:
+    background 0.15s,
+    box-shadow 0.2s var(--p-ease);
 
   &:hover {
     background: var(--p-surface);
@@ -154,7 +217,7 @@ img { max-width: 100%; display: block; }
 .price-now {
   font-size: 16px;
   font-weight: 700;
-  letter-spacing: -.02em;
+  letter-spacing: -0.02em;
 }
 
 .price-old {
@@ -171,29 +234,47 @@ img { max-width: 100%; display: block; }
   padding: 5px 12px;
   font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: rgba(255, 255, 255, .78);
+  background: rgba(255, 255, 255, 0.78);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   color: var(--p-text);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 
   &--oferta {
-    background: rgba(29, 29, 31, .82);
-    color: #FFFFFF;
+    background: rgba(29, 29, 31, 0.82);
+    color: #ffffff;
   }
 }
 
 /* ── Scrollbar ── */
 @media (min-width: 1024px) {
-  ::-webkit-scrollbar { width: 10px; }
-  ::-webkit-scrollbar-track { background: var(--p-bg); }
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--p-bg);
+  }
   ::-webkit-scrollbar-thumb {
-    background: #D2D2D7;
+    background: #d2d2d7;
     border-radius: 8px;
     border: 2px solid var(--p-bg);
 
-    &:hover { background: var(--p-text-2); }
+    &:hover {
+      background: var(--p-text-2);
+    }
   }
+}
+
+
+.dialog-panel .mat-mdc-dialog-container .mdc-dialog__surface {
+  border-radius: 18px !important;
+  box-shadow: var(--p-shadow-hover) !important;
+  overflow: hidden;
+}
+
+.cdk-overlay-dark-backdrop {
+  background: rgba(29, 29, 31, .3);
+  backdrop-filter: blur(3px);
 }

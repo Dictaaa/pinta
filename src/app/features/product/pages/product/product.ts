@@ -1,13 +1,11 @@
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { CartService } from '../../../../core/services/cart';
-import { StoreContextService } from '../../../../core/services/store-context';
+// src/app/features/dashboard/pages/products/products.ts
+import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import {
-  MOCK_TIENDAS,
-  StoreProduct,
-  StoreProfile,
-} from '../../../store/pages/store/store';
+  ApiProduct, PlanUsage, ProductService,
+} from '../../../../core/services/product';
+import { ProductFormModal,ProductFormData } from '../../modal/product-form-modal/product-form-modal';
 
 @Component({
   selector: 'app-product',
@@ -17,113 +15,109 @@ import {
   styleUrl: './product.scss',
 })
 export class Product {
-  private route = inject(ActivatedRoute);
-  private destroyRef = inject(DestroyRef);
-  private storeCtx = inject(StoreContextService);
-  private cart = inject(CartService);
-
-  /* ── Estado ─────────────────────────────────── */
-  producto = signal<StoreProduct | null>(null);
-  tienda = signal<StoreProfile | null>(null);
-  relacionados = signal<StoreProduct[]>([]);
+  private productService = inject(ProductService);
+private dialog = inject(MatDialog);
+  productos = signal<ApiProduct[]>([]);
+  planUsage = signal<PlanUsage | null>(null);
   cargando = signal(true);
-  noEncontrado = signal(false);
-
-  tallas = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-  tallaSeleccionada = signal<string | null>(null);
-  faltaTalla = signal(false);
-  cantidad = signal(1);
-  agregado = signal(false);
-  favorito = signal(false);
-
-  descuento = computed(() => {
-    const p = this.producto();
-    if (!p?.anterior) return 0;
-    return Math.round((1 - p.precio / p.anterior) * 100);
-  });
+  error = signal<string | null>(null);
 
   constructor() {
-    this.route.paramMap
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(params => this.cargarProducto(Number(params.get('id'))));
-
-    this.destroyRef.onDestroy(() => this.storeCtx.clear());
+    this.cargar();
   }
 
-  /* ── Carga (mock — reemplazar por ProductService) ─ */
-  private cargarProducto(id: number): void {
+  cargar(): void {
     this.cargando.set(true);
-    this.noEncontrado.set(false);
-    this.tallaSeleccionada.set(null);
-    this.faltaTalla.set(false);
-    this.cantidad.set(1);
-    this.agregado.set(false);
-    window.scrollTo({ top: 0 });
-
-    // TODO: this.productService.getById(id) cuando exista el API
-    for (const data of Object.values(MOCK_TIENDAS)) {
-      const encontrado = data.productos.find(p => p.id === id);
-      if (encontrado) {
-        this.producto.set(encontrado);
-        this.tienda.set(data.perfil);
-        this.relacionados.set(
-          data.productos.filter(p => p.id !== id).slice(0, 4)
-        );
-        this.storeCtx.set(data.perfil);
+    this.productService.listMine().subscribe({
+      next: res => {
+        this.productos.set(res.products);
+        this.planUsage.set(res.plan_usage);
         this.cargando.set(false);
-        return;
-      }
-    }
-
-    this.producto.set(null);
-    this.noEncontrado.set(true);
-    this.cargando.set(false);
-  }
-
-  /* ── Acciones ───────────────────────────────── */
-  seleccionarTalla(talla: string): void {
-    this.tallaSeleccionada.set(talla);
-    this.faltaTalla.set(false);
-  }
-
-  cambiarCantidad(delta: number): void {
-    this.cantidad.update(c => Math.min(10, Math.max(1, c + delta)));
-  }
-
-  agregarAlCarrito(): void {
-    const p = this.producto();
-    const t = this.tienda();
-    if (!p || !t) return;
-
-    if (!this.tallaSeleccionada()) {
-      this.faltaTalla.set(true);
-      return;
-    }
-
-    this.cart.agregar(
-      {
-        productoId: p.id,
-        nombre: p.nombre,
-        precio: p.precio,
-        tiendaSlug: t.slug,
-        tiendaNombre: t.nombre,
-        talla: this.tallaSeleccionada()!,
-        imagen: p.imagen,
       },
-      this.cantidad()
+      error: () => {
+        this.error.set('No pudimos cargar tus productos.');
+        this.cargando.set(false);
+      },
+    });
+  }
+
+  toggle(p: ApiProduct): void {
+    this.productService.toggleActive(p.id).subscribe({
+      next: res => {
+        this.productos.update(list =>
+          list.map(x => (x.id === res.id ? { ...x, active: res.active } : x)),
+        );
+        this.actualizarUso(res.active ? 1 : -1);
+      },
+      error: err => {
+        // Límite del plan al reactivar
+        alert(err.error?.error ?? 'No se pudo cambiar el estado');
+      },
+    });
+  }
+
+  eliminar(p: ApiProduct): void {
+    if (!confirm(`¿Eliminar "${p.name}"? Dejará de mostrarse en tu tienda.`)) return;
+
+    this.productService.remove(p.id).subscribe({
+      next: () => {
+        const estabaActivo = p.active;
+        this.productos.update(list => list.filter(x => x.id !== p.id));
+        if (estabaActivo) this.actualizarUso(-1);
+      },
+      error: () => alert('No se pudo eliminar el producto'),
+    });
+  }
+
+  private actualizarUso(delta: number): void {
+    this.planUsage.update(u =>
+      u ? { ...u, products_used: u.products_used + delta } : u,
     );
-
-    // Feedback en el botón
-    this.agregado.set(true);
-    setTimeout(() => this.agregado.set(false), 2000);
   }
 
-  toggleFavorito(): void {
-    this.favorito.update(v => !v);
+  /* ── Helpers ── */
+  imagen(p: ApiProduct): string | null {
+    return p.ProductImages?.length ? p.ProductImages[0].url : null;
   }
 
-  /* ── Helpers ────────────────────────────────── */
-  cop(valor: number): string {
-    return '$' + valor.toLocaleString('es-CO');
+  stockTotal(p: ApiProduct): number {
+    return (p.ProductVariants ?? []).reduce((acc, v) => acc + v.stock, 0);
   }
+
+  usoPct(): number {
+    const u = this.planUsage();
+    if (!u || !u.product_limit) return 0;
+    return Math.min(100, Math.round((u.products_used / u.product_limit) * 100));
+  }
+
+  limiteAlcanzado(): boolean {
+    const u = this.planUsage();
+    return !!u && u.products_used >= u.product_limit;
+  }
+
+  cop(valor: string | number): string {
+    return '$' + Number(valor).toLocaleString('es-CO');
+  }
+
+  openModal(producto: ApiProduct | null = null): void {
+  const data: ProductFormData = {
+    producto,
+    maxImagenes: this.planUsage()?.images_per_product ?? 10,
+  };
+
+  this.dialog
+    .open(ProductFormModal, {
+      data,
+      panelClass: 'dialog-panel',
+      width: '860px',
+      maxWidth: '94vw',
+      maxHeight: '90vh',
+      autoFocus: false,
+    })
+    .afterClosed()
+    .subscribe(guardado => {
+      if (guardado) this.cargar();   // recarga lista + barra del plan
+    });
+}
+
 }

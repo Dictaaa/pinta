@@ -1,0 +1,192 @@
+<div class="modal">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <header class="modal__head">
+    <h1>{{ esEdicion() ? 'Editar producto' : 'Nuevo producto' }}</h1>
+    <button type="button" class="modal__close" (click)="cancelar()" aria-label="Cerrar">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- ══════════ CUERPO (scrolleable) ══════════ -->
+  <form [formGroup]="form" (ngSubmit)="guardar()" novalidate class="modal__form">
+    <div class="modal__body">
+
+      @if (error()) {
+        <p class="form-error" role="alert">{{ error() }}</p>
+      }
+
+      <div class="form-layout">
+
+        <!-- ── Columna principal ── -->
+        <div class="col-main">
+
+          <section class="block">
+            <h2>Información</h2>
+
+            <label class="field" [class.invalid]="campoInvalido('name')">
+              <span class="field-label">Nombre del producto</span>
+              <input type="text" formControlName="name" placeholder="Ej: Camisa Oxford Blanca">
+              @if (campoInvalido('name')) {
+                <span class="field-hint">Mínimo 3 caracteres</span>
+              }
+            </label>
+
+            <label class="field">
+              <span class="field-label">Descripción</span>
+              <textarea
+                formControlName="description"
+                rows="3"
+                placeholder="Material, corte, recomendaciones de talla..."></textarea>
+            </label>
+
+            <div class="field-row">
+              <label class="field" [class.invalid]="campoInvalido('category_id')">
+                <span class="field-label">Categoría</span>
+                <select formControlName="category_id">
+                  <option [ngValue]="null" disabled>Selecciona</option>
+                  @for (c of catalogos()?.categories; track c.id) {
+                    <option [ngValue]="c.id">{{ c.name }}</option>
+                  }
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Marca (opcional)</span>
+                <select formControlName="brand_id">
+                  <option [ngValue]="null">Sin marca</option>
+                  @for (b of catalogos()?.brands; track b.id) {
+                    <option [ngValue]="b.id">{{ b.name }}</option>
+                  }
+                </select>
+              </label>
+            </div>
+
+            <div class="field-row">
+              <label class="field" [class.invalid]="campoInvalido('gender')">
+                <span class="field-label">Género</span>
+                <select formControlName="gender">
+                  <option value="" disabled>Selecciona</option>
+                  @for (g of generos; track g.value) {
+                    <option [value]="g.value">{{ g.label }}</option>
+                  }
+                </select>
+              </label>
+
+              <label class="field">
+                <span class="field-label">Estado</span>
+                <select formControlName="condition">
+                  <option value="new">Nuevo</option>
+                  <option value="used">Usado</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <section class="block">
+            <h2>Precio</h2>
+
+            <div class="field-row">
+              <label class="field" [class.invalid]="campoInvalido('price')">
+                <span class="field-label">Precio (COP)</span>
+                <input type="number" formControlName="price" placeholder="89900" min="1000">
+                @if (campoInvalido('price')) {
+                  <span class="field-hint">Mínimo $1.000</span>
+                }
+              </label>
+
+              <label class="field">
+                <span class="field-label">Precio anterior (opcional)</span>
+                <input type="number" formControlName="previous_price" placeholder="Para mostrar descuento">
+              </label>
+            </div>
+          </section>
+
+          <section class="block">
+            <h2>Tallas y stock</h2>
+            <p class="block-sub">Activa las tallas disponibles y su cantidad.</p>
+
+            <div class="tallas">
+              @for (t of tallas(); track t.size_id) {
+                <div class="talla" [class.talla--on]="t.selected">
+                  <button
+                    type="button"
+                    class="talla__pill"
+                    (click)="toggleTalla(t.size_id)">
+                    {{ t.name }}
+                  </button>
+                  @if (t.selected) {
+                    <input
+                      type="number"
+                      class="talla__stock"
+                      [value]="t.stock"
+                      (input)="setStock(t.size_id, $event)"
+                      min="0"
+                      placeholder="0"
+                      aria-label="Stock">
+                  }
+                </div>
+              }
+            </div>
+          </section>
+        </div>
+
+        <!-- ── Columna fotos ── -->
+        <div class="col-side">
+          <section class="block">
+            <h2>Fotos</h2>
+            <p class="block-sub">{{ totalImagenes() }} de {{ maxImagenes() }} · la primera es la principal</p>
+
+            <div class="photos">
+              @for (img of imagenesExistentes(); track img.id) {
+                <div class="photo">
+                  <img [src]="img.url" alt="Foto del producto">
+                  <button
+                    type="button"
+                    class="photo__remove"
+                    (click)="quitarExistente(img.id)"
+                    aria-label="Eliminar foto">×</button>
+                </div>
+              }
+
+              @for (img of imagenesNuevas(); track img.preview; let i = $index) {
+                <div class="photo photo--new">
+                  <img [src]="img.preview" alt="Foto nueva">
+                  <button
+                    type="button"
+                    class="photo__remove"
+                    (click)="quitarNueva(i)"
+                    aria-label="Quitar foto">×</button>
+                </div>
+              }
+
+              @if (totalImagenes() < maxImagenes()) {
+                <label class="photo-add">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple
+                    (change)="seleccionarImagenes($event)">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                  <span>Agregar</span>
+                </label>
+              }
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ FOOTER ══════════ -->
+    <footer class="modal__foot">
+      <button type="button" class="btn-ghost" (click)="cancelar()">Cancelar</button>
+      <button type="submit" class="btn-save" [disabled]="enviando()">
+        {{ enviando() ? 'Guardando…' : (esEdicion() ? 'Guardar cambios' : 'Publicar producto') }}
+      </button>
+    </footer>
+  </form>
+</div>

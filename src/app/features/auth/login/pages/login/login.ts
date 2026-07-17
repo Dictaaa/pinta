@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../../../../core/services/auth';
+import { AuthService } from '../../../../../core/services/api/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -24,7 +24,7 @@ export class Login {
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
-  async enviar(): Promise<void> {
+  enviar(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -33,15 +33,19 @@ export class Login {
     this.enviando.set(true);
     this.error.set(null);
 
-    try {
-      const { email, password } = this.form.getRawValue();
-      await this.auth.login(email, password);
-      this.router.navigate(['/dashboard']);
-    } catch {
-      this.error.set('Correo o contraseña incorrectos.');
-    } finally {
-      this.enviando.set(false);
-    }
+    const { email, password } = this.form.getRawValue();
+
+    this.auth.login(email, password).subscribe({
+      next: (res: any) => {
+        this.auth.saveSession(res.token, res.user);
+        this.router.navigate(['/dashboard']);
+        // no apagamos enviando: el spinner acompaña la navegación
+      },
+      error: (err) => {
+        this.enviando.set(false);
+        this.error.set(err.error?.error ?? 'Correo o contraseña incorrectos.');
+      },
+    });
   }
 
   campoInvalido(nombre: 'email' | 'password'): boolean {

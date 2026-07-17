@@ -7,7 +7,7 @@ import { CartService } from '../../core/services/cart';
 import { AuthService } from '../../core/services/auth'; // ajusta si tu archivo se llama auth.service
 import { UiService } from '../../core/services/ui';
 
-type ModoNav = 'oculta' | 'landing' | 'dashboard' | 'compra';
+type ModoNav = 'oculta' | 'landing' | 'dashboard' | 'compra' | 'productos';
 
 @Component({
   selector: 'app-topnav',
@@ -47,6 +47,9 @@ export class Topnav {
     if (url.startsWith('/dashboard')) {
       return 'dashboard';
     }
+    if (url.startsWith('/productos')) {
+      return 'dashboard';
+    }
     if (url === '/' || url === '') {
       return 'landing';
     }
@@ -58,7 +61,7 @@ export class Topnav {
     const url = this.url().split('?')[0];
     const titulos: Record<string, string> = {
       '/dashboard': 'Panel',
-      '/dashboard/productos': 'Productos',
+      '/productos': 'Productos',
       '/dashboard/pedidos': 'Pedidos',
       '/dashboard/perfil': 'Perfil de tienda',
     };
