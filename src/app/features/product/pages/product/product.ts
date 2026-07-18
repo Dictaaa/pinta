@@ -1,11 +1,24 @@
-// src/app/features/dashboard/pages/products/products.ts
-import { Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
-import {
-  ApiProduct, PlanUsage, ProductService,
-} from '../../../../core/services/product';
-import { ProductFormModal,ProductFormData } from '../../modal/product-form-modal/product-form-modal';
+// src/app/features/product/pages/product/product.ts
+import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { CartService } from '../../../../core/services/cart';
+import { StoreContextService } from '../../../../core/services/store-context';
+import { ShopService } from '../../../../core/services/api/shop.service';
+import { ApiProduct } from '../../../../core/services/product';
+
+interface TiendaLigera {
+  id: number;
+  slug: string;
+  name: string;
+  verified: boolean;
+}
+
+interface TallaDisponible {
+  size_id: number | null;
+  name: string;
+  stock: number;
+}
 
 @Component({
   selector: 'app-product',
@@ -15,109 +28,155 @@ import { ProductFormModal,ProductFormData } from '../../modal/product-form-modal
   styleUrl: './product.scss',
 })
 export class Product {
-  private productService = inject(ProductService);
-private dialog = inject(MatDialog);
-  productos = signal<ApiProduct[]>([]);
-  planUsage = signal<PlanUsage | null>(null);
+  private route = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
+  private storeCtx = inject(StoreContextService);
+  private cart = inject(CartService);
+  private shopService = inject(ShopService);
+
+  /* ── Estado ─────────────────────────────────── */
+  producto = signal<ApiProduct | null>(null);
+  tienda = signal<TiendaLigera | null>(null);
+  relacionados = signal<ApiProduct[]>([]);
   cargando = signal(true);
-  error = signal<string | null>(null);
+  noEncontrado = signal(false);
+
+  imagenActiva = signal(0);
+  tallaSeleccionada = signal<TallaDisponible | null>(null);
+  faltaTalla = signal(false);
+  cantidad = signal(1);
+  agregado = signal(false);
+  favorito = signal(false);
+
+  /* ── Derivados ──────────────────────────────── */
+  imagenes = computed(() => this.producto()?.images ?? []);
+
+  /** Tallas reales del producto (de sus variantes) */
+  tallas = computed<TallaDisponible[]>(() =>
+    (this.producto()?.variants ?? []).map(v => ({
+      size_id: v.size_id,
+      name: v.size?.name ?? 'Única',
+      stock: v.stock,
+    })),
+  );
+
+  descuento = computed(() => {
+    const p = this.producto();
+    if (!p?.previous_price) return 0;
+    return Math.round((1 - Number(p.price) / Number(p.previous_price)) * 100);
+  });
 
   constructor() {
-    this.cargar();
+    // slug (del padre, via paramsInheritanceStrategy) + id
+    this.route.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params =>
+        this.cargar(params.get('slug') ?? '', Number(params.get('id'))),
+      );
+
+    this.destroyRef.onDestroy(() => this.storeCtx.clear());
   }
 
-  cargar(): void {
+  private cargar(slug: string, id: number): void {
     this.cargando.set(true);
-    this.productService.listMine().subscribe({
+    this.noEncontrado.set(false);
+    this.imagenActiva.set(0);
+    this.tallaSeleccionada.set(null);
+    this.faltaTalla.set(false);
+    this.cantidad.set(1);
+    this.agregado.set(false);
+    window.scrollTo({ top: 0 });
+
+    this.shopService.getProduct(slug, id).subscribe({
       next: res => {
-        this.productos.set(res.products);
-        this.planUsage.set(res.plan_usage);
+        this.producto.set(res.product);
+        this.tienda.set(res.shop);
+        this.storeCtx.set({
+          slug: res.shop.slug,
+          nombre: res.shop.name,
+          verificada: res.shop.verified,
+        });
         this.cargando.set(false);
+        this.cargarRelacionados(slug, id);
       },
       error: () => {
-        this.error.set('No pudimos cargar tus productos.');
+        this.producto.set(null);
+        this.storeCtx.clear();
+        this.noEncontrado.set(true);
         this.cargando.set(false);
       },
     });
   }
 
-  toggle(p: ApiProduct): void {
-    this.productService.toggleActive(p.id).subscribe({
-      next: res => {
-        this.productos.update(list =>
-          list.map(x => (x.id === res.id ? { ...x, active: res.active } : x)),
-        );
-        this.actualizarUso(res.active ? 1 : -1);
-      },
-      error: err => {
-        // Límite del plan al reactivar
-        alert(err.error?.error ?? 'No se pudo cambiar el estado');
-      },
+  private cargarRelacionados(slug: string, id: number): void {
+    this.shopService.getCatalog(slug).subscribe({
+      next: res =>
+        this.relacionados.set(res.products.filter(p => p.id !== id).slice(0, 4)),
+      error: () => this.relacionados.set([]),
     });
   }
 
-  eliminar(p: ApiProduct): void {
-    if (!confirm(`¿Eliminar "${p.name}"? Dejará de mostrarse en tu tienda.`)) return;
-
-    this.productService.remove(p.id).subscribe({
-      next: () => {
-        const estabaActivo = p.active;
-        this.productos.update(list => list.filter(x => x.id !== p.id));
-        if (estabaActivo) this.actualizarUso(-1);
-      },
-      error: () => alert('No se pudo eliminar el producto'),
-    });
+  /* ── Acciones ───────────────────────────────── */
+  seleccionarTalla(t: TallaDisponible): void {
+    if (t.stock === 0) return;
+    this.tallaSeleccionada.set(t);
+    this.faltaTalla.set(false);
   }
 
-  private actualizarUso(delta: number): void {
-    this.planUsage.update(u =>
-      u ? { ...u, products_used: u.products_used + delta } : u,
+  cambiarCantidad(delta: number): void {
+    const max = this.tallaSeleccionada()?.stock ?? 10;
+    this.cantidad.update(c => Math.min(Math.min(10, max), Math.max(1, c + delta)));
+  }
+
+  agregarAlCarrito(): void {
+    const p = this.producto();
+    const t = this.tienda();
+    if (!p || !t) return;
+
+    const talla = this.tallaSeleccionada();
+    if (!talla && this.tallas().length > 0) {
+      this.faltaTalla.set(true);
+      return;
+    }
+
+    this.cart.agregar(
+      {
+        productoId: p.id,
+        nombre: p.name,
+        precio: Number(p.price),
+        tiendaSlug: t.slug,
+        tiendaNombre: t.name,
+        talla: talla?.name,
+        imagen: p.images?.[0]?.url,
+      },
+      this.cantidad(),
     );
+
+    this.agregado.set(true);
+    setTimeout(() => this.agregado.set(false), 2000);
   }
 
-  /* ── Helpers ── */
-  imagen(p: ApiProduct): string | null {
-    return p.ProductImages?.length ? p.ProductImages[0].url : null;
+  toggleFavorito(): void {
+    this.favorito.update(v => !v);
   }
 
-  stockTotal(p: ApiProduct): number {
-    return (p.ProductVariants ?? []).reduce((acc, v) => acc + v.stock, 0);
-  }
-
-  usoPct(): number {
-    const u = this.planUsage();
-    if (!u || !u.product_limit) return 0;
-    return Math.min(100, Math.round((u.products_used / u.product_limit) * 100));
-  }
-
-  limiteAlcanzado(): boolean {
-    const u = this.planUsage();
-    return !!u && u.products_used >= u.product_limit;
-  }
-
+  /* ── Helpers ────────────────────────────────── */
   cop(valor: string | number): string {
     return '$' + Number(valor).toLocaleString('es-CO');
   }
 
-  openModal(producto: ApiProduct | null = null): void {
-  const data: ProductFormData = {
-    producto,
-    maxImagenes: this.planUsage()?.images_per_product ?? 10,
-  };
+  rating(p: ApiProduct): number {
+    return Number(p.rating_average) || 0;
+  }
 
-  this.dialog
-    .open(ProductFormModal, {
-      data,
-      panelClass: 'dialog-panel',
-      width: '860px',
-      maxWidth: '94vw',
-      maxHeight: '90vh',
-      autoFocus: false,
-    })
-    .afterClosed()
-    .subscribe(guardado => {
-      if (guardado) this.cargar();   // recarga lista + barra del plan
-    });
-}
+  badge(p: ApiProduct): string | null {
+    if (p.previous_price) return 'Oferta';
+    if (p.badge === 'best_seller') return 'Más vendido';
+    if (p.badge === 'new') return 'Nuevo';
+    return null;
+  }
 
+  imagenDe(p: ApiProduct): string | null {
+    return p.images?.length ? p.images[0].url : null;
+  }
 }

@@ -16,7 +16,7 @@ export interface ApiVariant {
   size_id: number | null;
   color_id: number | null;
   stock: number;
-  Size?: { id: number; name: string };
+  size?: { id: number; name: string };
 }
 
 export interface ApiProduct {
@@ -38,6 +38,8 @@ export interface ApiProduct {
   category?: { id: number; name: string };
   images?: ApiImage[];
   variants?: ApiVariant[];
+  badge: string | null;          // 'new' | 'sale' | 'best_seller'
+  featured: boolean;
 }
 
 export interface PlanUsage {
@@ -53,9 +55,9 @@ export interface MineResponse {
 }
 
 export interface Catalogs {
-  categories: { id: number; name: string }[];
+  categories: { id: number; name: string; size_type: 'clothing' | 'shoes' | 'none' }[];
   brands: { id: number; name: string }[];
-  sizes: { id: number; name: string }[];
+  sizes: { id: number; name: string; size_type: 'clothing' | 'shoes' | 'none' }[];
   colors: { id: number; name: string; hex_code: string }[];
 }
 

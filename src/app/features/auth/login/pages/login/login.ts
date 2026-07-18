@@ -37,9 +37,8 @@ export class Login {
 
     this.auth.login(email, password).subscribe({
       next: (res: any) => {
-        this.auth.saveSession(res.token, res.user);
-        this.router.navigate(['/dashboard']);
-        // no apagamos enviando: el spinner acompaña la navegación
+        this.auth.saveSession(res.token, res.user, res.shop);
+        this.router.navigate(['/', res.shop.slug, 'dashboard']);
       },
       error: (err) => {
         this.enviando.set(false);

@@ -12,13 +12,28 @@
 
     <form [formGroup]="form" (ngSubmit)="enviar()" novalidate>
 
-      <label class="field" [class.invalid]="campoInvalido('nombre')">
-        <span class="field-label">Tu nombre</span>
-        <input type="text" formControlName="nombre" placeholder="Nombre y apellido" autocomplete="name">
-        @if (campoInvalido('nombre')) {
-          <span class="field-hint">Mínimo 3 caracteres</span>
-        }
-      </label>
+      <!-- ══════════ TUS DATOS ══════════ -->
+      <div class="name-grid">
+        <label class="field" [class.invalid]="campoInvalido('first_name')">
+          <span class="field-label">Primer nombre</span>
+          <input type="text" formControlName="first_name" placeholder="Gabriel" autocomplete="given-name">
+        </label>
+
+        <label class="field">
+          <span class="field-label">Segundo nombre</span>
+          <input type="text" formControlName="middle_name" placeholder="(opcional)">
+        </label>
+
+        <label class="field" [class.invalid]="campoInvalido('last_name')">
+          <span class="field-label">Primer apellido</span>
+          <input type="text" formControlName="last_name" placeholder="Rodríguez" autocomplete="family-name">
+        </label>
+
+        <label class="field">
+          <span class="field-label">Segundo apellido</span>
+          <input type="text" formControlName="second_last_name" placeholder="(opcional)">
+        </label>
+      </div>
 
       <label class="field" [class.invalid]="campoInvalido('email')">
         <span class="field-label">Correo electrónico</span>
@@ -28,71 +43,118 @@
         }
       </label>
 
-      <label class="field" [class.invalid]="campoInvalido('password')">
-        <span class="field-label">Contraseña</span>
-        <div class="field-password">
-          <input
-            [type]="verPassword() ? 'text' : 'password'"
-            formControlName="password"
-            placeholder="Mínimo 6 caracteres"
-            autocomplete="new-password">
-          <button
-            type="button"
-            class="toggle-pass"
-            (click)="verPassword.set(!verPassword())"
-            [attr.aria-label]="verPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
-            @if (verPassword()) {
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M1 1l22 22"/></svg>
-            } @else {
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            }
-          </button>
-        </div>
-        @if (campoInvalido('password')) {
-          <span class="field-hint">Mínimo 6 caracteres</span>
-        }
-      </label>
+      <div class="field-row">
+        <label class="field" [class.invalid]="campoInvalido('password')">
+          <span class="field-label">Contraseña</span>
+          <div class="field-password">
+            <input
+              [type]="verPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Mínimo 6 caracteres"
+              autocomplete="new-password">
+            <button
+              type="button"
+              class="toggle-pass"
+              (click)="verPassword.set(!verPassword())"
+              [attr.aria-label]="verPassword() ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+              @if (verPassword()) {
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M1 1l22 22"/></svg>
+              } @else {
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              }
+            </button>
+          </div>
+          @if (campoInvalido('password')) {
+            <span class="field-hint">Mínimo 6 caracteres</span>
+          }
+        </label>
+
+        <label class="field" [class.invalid]="campoInvalido('phone')">
+          <span class="field-label">Celular</span>
+          <input type="tel" formControlName="phone" placeholder="3001234567" autocomplete="tel" maxlength="10">
+          @if (campoInvalido('phone')) {
+            <span class="field-hint">Celular colombiano de 10 dígitos</span>
+          }
+        </label>
+      </div>
 
       <hr class="divider">
 
-      <label class="field" [class.invalid]="campoInvalido('nombreTienda') || slugOcupado()">
-        <span class="field-label">Nombre de tu tienda</span>
-        <input type="text" formControlName="nombreTienda" placeholder="Ej: Moda Luna">
-        @if (campoInvalido('nombreTienda')) {
-          <span class="field-hint">Mínimo 3 caracteres</span>
-        }
-      </label>
+      <!-- ══════════ TU TIENDA ══════════ -->
+      <div class="shop-row">
+        <!-- Logo -->
+        <div class="logo-picker">
+          @if (logoPreview(); as preview) {
+            <div class="logo-preview">
+              <img [src]="preview" alt="Logo de tu tienda">
+              <button type="button" class="logo-remove" (click)="quitarLogo()" aria-label="Quitar logo">×</button>
+            </div>
+          } @else {
+            <label class="logo-add">
+              <input type="file" accept="image/jpeg,image/png,image/webp" (change)="seleccionarLogo($event)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="9" r="2"/>
+                <path d="M21 15l-4.5-4.5L6 21"/>
+              </svg>
+              <span>Logo</span>
+            </label>
+          }
+        </div>
 
-      <!-- Vista previa de la URL — el momento del producto -->
+        <label class="field shop-name" [class.invalid]="campoInvalido('shop_name')">
+          <span class="field-label">Nombre de tu tienda</span>
+          <input type="text" formControlName="shop_name" placeholder="Ej: Moda Luna">
+          @if (campoInvalido('shop_name')) {
+            <span class="field-hint">Mínimo 3 caracteres</span>
+          }
+        </label>
+      </div>
+
+      <!-- Vista previa de la URL -->
       @if (slug()) {
-        <div class="url-preview" [class.taken]="slugOcupado()">
+        <div class="url-preview" [class.taken]="estadoSlug() === 'ocupado' || estadoSlug() === 'invalido'">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
           </svg>
-          <span>pinta.co/<b>{{ slug() }}</b></span>
-          @if (slugOcupado()) {
-            <span class="url-status">No disponible</span>
-          } @else {
-            <span class="url-status ok">✓ Disponible</span>
+          <span>lapintaco.com/<b>{{ slug() }}</b></span>
+
+          @switch (estadoSlug()) {
+            @case ('verificando') {
+              <span class="url-status"><span class="spinner spinner--dark"></span></span>
+            }
+            @case ('disponible') {
+              <span class="url-status ok">✓ Disponible</span>
+            }
+            @case ('ocupado') {
+              <span class="url-status">No disponible</span>
+            }
+            @case ('invalido') {
+              <span class="url-status">Muy corto</span>
+            }
           }
         </div>
       }
 
-      <label class="field" [class.invalid]="campoInvalido('ciudad')">
+      <label class="field" [class.invalid]="campoInvalido('city_id')">
         <span class="field-label">Ciudad de tu tienda</span>
-        <select formControlName="ciudad">
-          <option value="" disabled>Selecciona tu ciudad</option>
-          @for (c of ciudades; track c) {
-            <option [value]="c">{{ c }}</option>
+        <select formControlName="city_id">
+          <option [ngValue]="null" disabled>Selecciona tu ciudad</option>
+          @for (c of ciudades(); track c.id) {
+            <option [ngValue]="c.id">{{ c.name }}, {{ c.department }}</option>
           }
         </select>
-        @if (campoInvalido('ciudad')) {
+        @if (campoInvalido('city_id')) {
           <span class="field-hint">Selecciona tu ciudad</span>
         }
       </label>
 
       <button type="submit" class="btn-submit" [disabled]="enviando()">
-        {{ enviando() ? 'Creando tu tienda…' : 'Crear mi tienda' }}
+        @if (enviando()) {
+          <span class="spinner" aria-hidden="true"></span>
+          Creando tu tienda…
+        } @else {
+          Crear mi tienda
+        }
       </button>
 
       <p class="legal">

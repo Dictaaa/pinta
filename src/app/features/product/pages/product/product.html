@@ -1,119 +1,210 @@
-<div class="products-page">
-
-  <!-- ══════════ CABECERA + USO DEL PLAN ══════════ -->
-  <header class="page-head">
-    <div>
-      <h1>Productos</h1>
-      @if (planUsage(); as u) {
-        <div class="plan-usage">
-          <span class="plan-usage__text">
-            <b>{{ u.products_used }}</b> de {{ u.product_limit }} productos
-            · Plan {{ u.plan_name }}
-          </span>
-          <div class="plan-usage__bar">
-            <div class="plan-usage__fill" [style.width.%]="usoPct()"></div>
-          </div>
-        </div>
-      }
-    </div>
-
-    <button class="btn-new" (click)="openModal()" [class.disabled]="limiteAlcanzado()">
-  ... Nuevo producto
-</button>
-  </header>
-
-  @if (limiteAlcanzado()) {
-    <p class="limit-alert">
-      Alcanzaste el límite de tu plan. Mejora tu plan para publicar más productos.
-    </p>
-  }
-
-  <!-- ══════════ ESTADOS ══════════ -->
-  @if (cargando()) {
-    <div class="panel">
-      @for (i of [1,2,3,4]; track i) {
-        <div class="sk sk-row"></div>
-      }
-    </div>
-
-  } @else if (error()) {
-    <div class="empty">
-      <p class="empty-title">{{ error() }}</p>
-      <button class="btn-outline" (click)="cargar()">Reintentar</button>
-    </div>
-
-  } @else if (productos().length === 0) {
-    <div class="empty">
-      <p class="empty-title">Aún no tienes productos</p>
-      <p class="empty-text">Publica el primero y aparecerá en tu tienda.</p>
-      <a class="btn-new" routerLink="/dashboard/productos/nuevo">Publicar producto</a>
-    </div>
-
-  } @else {
-    <!-- ══════════ TABLA ══════════ -->
-    <div class="panel">
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th class="hide-sm">Categoría</th>
-              <th class="num">Precio</th>
-              <th class="num hide-sm">Stock</th>
-              <th class="num hide-sm">Vendidos</th>
-              <th>Visible</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (p of productos(); track p.id) {
-              <tr [class.row-off]="!p.active">
-                <td>
-                  <div class="prod">
-                    <div class="prod__thumb">
-                      @if (imagen(p); as url) {
-                        <img [src]="url" [alt]="p.name" loading="lazy">
-                      } @else {
-                        <span>{{ p.name[0] }}</span>
-                      }
-                    </div>
-                    <span class="prod__name">{{ p.name }}</span>
-                  </div>
-                </td>
-                <td class="hide-sm muted">{{ p.Category?.name }}</td>
-                <td class="num strong">{{ cop(p.price) }}</td>
-                <td class="num hide-sm" [class.stock-out]="stockTotal(p) === 0">
-                  {{ stockTotal(p) }}
-                </td>
-                <td class="num hide-sm muted">{{ p.sold_count }}</td>
-                <td>
-                  <button
-                    class="switch"
-                    [class.on]="p.active"
-                    (click)="toggle(p)"
-                    [attr.aria-label]="p.active ? 'Pausar producto' : 'Activar producto'"
-                    [attr.aria-pressed]="p.active">
-                    <span class="switch__knob"></span>
-                  </button>
-                </td>
-                <td class="actions">
-                 <button class="icon-btn" (click)="openModal(p)" aria-label="Editar">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2-2h14a2 2 0 0 0-2-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4L18.5 2.5z"/>
-                    </svg>
-                  </button>
-                  <button class="icon-btn" (click)="eliminar(p)" aria-label="Eliminar">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                      <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+@if (cargando()) {
+  <!-- ══════════ SKELETON ══════════ -->
+  <div class="product-page">
+    <div class="product-layout">
+      <div class="sk sk-media"></div>
+      <div class="sk-lines">
+        <div class="sk sk-line w30"></div>
+        <div class="sk sk-line w70"></div>
+        <div class="sk sk-line w40"></div>
+        <div class="sk sk-line w90"></div>
       </div>
     </div>
-  }
-</div>
+  </div>
+
+} @else if (noEncontrado()) {
+  <!-- ══════════ 404 PRODUCTO ══════════ -->
+  <div class="product-empty">
+    <p class="empty-title">Este producto ya no está disponible</p>
+    <p class="empty-text">Puede que la tienda lo haya retirado o vendido.</p>
+    <a class="btn-dark" routerLink="/">Seguir explorando</a>
+  </div>
+
+} @else if (producto(); as p) {
+  <div class="product-page">
+
+    <!-- ══════════ MIGA ══════════ -->
+    @if (tienda(); as t) {
+      <nav class="crumbs" aria-label="Estás en">
+        <a [routerLink]="['/', t.slug, 'catalogo']">{{ t.name }}</a>
+        <span aria-hidden="true">/</span>
+        <span class="current">{{ p.name }}</span>
+      </nav>
+    }
+
+    <div class="product-layout">
+
+      <!-- ══════════ GALERÍA ══════════ -->
+      <div class="gallery">
+        <div class="gallery-main">
+          @if (badge(p); as label) {
+            <span class="badge" [class.badge--oferta]="label === 'Oferta'">{{ label }}</span>
+          }
+          @if (descuento() > 0) {
+            <span class="discount">-{{ descuento() }}%</span>
+          }
+
+          <span class="ph-letter" aria-hidden="true">{{ p.name[0] }}</span>
+          @if (imagenes()[imagenActiva()]; as img) {
+            <img [src]="img.url" [alt]="p.name">
+          }
+        </div>
+
+        @if (imagenes().length > 1) {
+          <div class="gallery-thumbs">
+            @for (img of imagenes(); track img.id; let i = $index) {
+              <button
+                class="thumb"
+                [class.on]="imagenActiva() === i"
+                (click)="imagenActiva.set(i)"
+                [attr.aria-label]="'Foto ' + (i + 1)">
+                <img [src]="img.url" [alt]="''" loading="lazy">
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- ══════════ INFO ══════════ -->
+      <div class="info">
+        @if (tienda(); as t) {
+          <a class="info-store" [routerLink]="['/', t.slug, 'catalogo']">
+            {{ t.name }}
+            @if (t.verified) {
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-label="Verificada">
+                <path d="M12 2l2.4 2.4 3.3-.5 1 3.2 3 1.5-1.2 3.1L22 15l-2.7 2-.3 3.4-3.4.3L13.5 23 12 21.5 10.5 23l-2.1-2.3-3.4-.3-.3-3.4L2 15l1.5-3.3L2.3 8.6l3-1.5 1-3.2 3.3.5z"/>
+              </svg>
+            }
+          </a>
+        }
+
+        <h1 class="info-name">{{ p.name }}</h1>
+
+        @if (rating(p) > 0 || p.sold_count > 0) {
+          <div class="info-meta">
+            @if (rating(p) > 0) {
+              <span class="star">★</span> {{ p.rating_average }}
+              <span class="dot-sep"></span>
+            }
+            {{ p.sold_count }} vendidos
+          </div>
+        }
+
+        <div class="info-price">
+          <span class="price-now" [class.is-sale]="p.previous_price">{{ cop(p.price) }}</span>
+          @if (p.previous_price) {
+            <span class="price-old">{{ cop(p.previous_price) }}</span>
+          }
+        </div>
+
+        @if (p.description) {
+          <p class="info-desc">{{ p.description }}</p>
+        }
+
+        <!-- Tallas (reales, con stock) -->
+        @if (tallas().length) {
+          <div class="block">
+            <div class="block-head">
+              <span class="block-label">Talla</span>
+            </div>
+            <div class="sizes">
+              @for (t of tallas(); track t.size_id) {
+                <button
+                  class="size-pill"
+                  [class.on]="tallaSeleccionada()?.size_id === t.size_id"
+                  [class.out]="t.stock === 0"
+                  [disabled]="t.stock === 0"
+                  (click)="seleccionarTalla(t)">
+                  {{ t.name }}
+                </button>
+              }
+            </div>
+            @if (tallaSeleccionada(); as sel) {
+              @if (sel.stock <= 5) {
+                <p class="stock-hint">¡Solo quedan {{ sel.stock }}!</p>
+              }
+            }
+            @if (faltaTalla()) {
+              <p class="error-hint">Selecciona una talla para continuar</p>
+            }
+          </div>
+        }
+
+        <!-- Cantidad + CTA -->
+        <div class="buy-row">
+          <div class="qty" role="group" aria-label="Cantidad">
+            <button (click)="cambiarCantidad(-1)" aria-label="Menos">−</button>
+            <span>{{ cantidad() }}</span>
+            <button (click)="cambiarCantidad(1)" aria-label="Más">+</button>
+          </div>
+
+          <button
+            class="btn-add"
+            [class.added]="agregado()"
+            (click)="agregarAlCarrito()">
+            {{ agregado() ? 'Agregado ✓' : 'Agregar al carrito' }}
+          </button>
+
+          <button
+            class="btn-fav"
+            [class.on]="favorito()"
+            [attr.aria-pressed]="favorito()"
+            (click)="toggleFavorito()"
+            aria-label="Agregar a favoritos">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21.2l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Confianza -->
+        <ul class="trust">
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="6" width="15" height="12" rx="2"/><circle cx="6" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/></svg>
+            Envíos a toda Colombia
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+            Devolución hasta 30 días
+          </li>
+          <li>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+            Pago protegido por PINTA
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ══════════ MÁS DE ESTA TIENDA ══════════ -->
+    @if (relacionados().length && tienda(); as t) {
+      <section class="related">
+        <div class="related-head">
+          <h2>Más de {{ tienda()!.name }}</h2>
+          <a class="link-all" [routerLink]="['/', tienda()!.slug, 'catalogo']">Ver tienda</a>
+        </div>
+
+        <div class="grid">
+          @for (r of relacionados(); track r.id) {
+            <a class="card" [routerLink]="['/', tienda()!.slug, 'producto', r.id]">
+              <div class="card-media">
+                <span class="ph-letter" aria-hidden="true">{{ r.name[0] }}</span>
+                @if (imagenDe(r); as url) {
+                  <img [src]="url" [alt]="r.name" loading="lazy">
+                }
+              </div>
+              <div class="card-info">
+                <h3 class="card-name">{{ r.name }}</h3>
+                <div class="card-price">
+                  <span class="price-now" [class.is-sale]="r.previous_price">{{ cop(r.price) }}</span>
+                  @if (r.previous_price) {
+                    <span class="price-old">{{ cop(r.previous_price) }}</span>
+                  }
+                </div>
+              </div>
+            </a>
+          }
+        </div>
+      </section>
+    }
+  </div>
+}

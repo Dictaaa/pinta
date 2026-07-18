@@ -7,6 +7,7 @@ export const ENDPOINTS = {
     LOGOUT: '/api/v1/auth/logout',
     ME: '/api/v1/auth/me',
     SLUG_AVAILABLE: (slug: string) => `/api/v1/auth/slug-disponible/${slug}`,
+    CITIES: '/api/v1/auth/cities',
   },
 
   PRODUCTS: {
@@ -23,5 +24,11 @@ export const ENDPOINTS = {
     ADD_IMAGES: (id: number | string) => `/api/v1/products/${id}/images`,
     REMOVE_IMAGE: (id: number | string, imageId: number | string) =>
       `/api/v1/products/${id}/images/${imageId}`,
+  },
+
+  SHOPS: {
+    CATALOG: (slug: string) => `/api/v1/shops/${slug}/catalog`,
+    PRODUCT: (slug: string, id: number | string) =>
+      `/api/v1/shops/${slug}/products/${id}`,
   },
 };

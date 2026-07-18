@@ -23,47 +23,114 @@
     <p class="empty-text">
       Revisa que la dirección esté bien escrita o explora las tiendas disponibles.
     </p>
-    <a class="btn-dark" href="/">Volver al inicio</a>
+    <a class="btn-dark" routerLink="/">Volver al inicio</a>
   </div>
 
 } @else if (tienda(); as t) {
   <div class="store-page">
-    <!-- ══════════ CATEGORÍAS + ORDEN ══════════ -->
-    <div class="store-toolbar">
-      <nav class="chips" aria-label="Categorías de la tienda">
-        @for (cat of categorias(); track cat) {
-          <button
-            class="chip"
-            [class.on]="categoriaActiva() === cat"
-            (click)="categoriaActiva.set(cat)">
-            {{ cat }}
-          </button>
-        }
-      </nav>
 
-      <select class="sort" aria-label="Ordenar por" (change)="cambiarOrden($event)">
-        <option value="relevancia">Relevancia</option>
-        <option value="ventas">Más vendidos</option>
-        <option value="precio_asc">Precio: menor a mayor</option>
-        <option value="precio_desc">Precio: mayor a menor</option>
-        <option value="rating">Mejor calificados</option>
-      </select>
-    </div>
+    <!-- ══════════ ENCABEZADO DE TIENDA ══════════ -->
+    <!-- <header class="store-header">
+      <div class="store-avatar" aria-hidden="true">
+        @if (t.logo_url) {
+          <img [src]="t.logo_url" [alt]="t.name">
+        } @else {
+          {{ iniciales(t.name) }}
+        }
+      </div>
+
+      <div class="store-main">
+        <div class="store-title-row">
+          <h1>{{ t.name }}</h1>
+          @if (t.verified) {
+            <span class="verified" title="Tienda verificada">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="#1D1D1F">
+                <path d="M12 2l2.4 2.4 3.3-.5 1 3.2 3 1.5-1.2 3.1L22 15l-2.7 2-.3 3.4-3.4.3L13.5 23 12 21.5 10.5 23l-2.1-2.3-3.4-.3-.3-3.4L2 15l1.5-3.3L2.3 8.6l3-1.5 1-3.2 3.3.5z"/>
+                <path d="M9 12.5l2 2 4-4.5" stroke="#FFFFFF" stroke-width="2" fill="none"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          }
+        </div>
+
+        <p class="store-url">lapintaco.com/{{ t.slug }}</p>
+
+        @if (t.description) {
+          <p class="store-desc">{{ t.description }}</p>
+        }
+
+        <div class="store-stats">
+          <span><b>{{ t.products_count }}</b> productos</span>
+          @if (t.total_sold > 0) {
+            <span class="sep"></span>
+            <span><b>{{ compacto(t.total_sold) }}</b> ventas</span>
+          }
+          @if (t.city) {
+            <span class="sep"></span>
+            <span>{{ t.city }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="store-actions">
+        @if (t.whatsapp) {
+          <a
+            class="btn-follow"
+            [href]="'https://wa.me/57' + t.whatsapp"
+            target="_blank"
+            rel="noopener">
+            WhatsApp
+          </a>
+        }
+        @if (t.instagram) {
+          <a
+            class="btn-outline"
+            [href]="'https://instagram.com/' + t.instagram"
+            target="_blank"
+            rel="noopener">
+            Instagram
+          </a>
+        }
+      </div>
+    </header> -->
+
+    <!-- ══════════ CATEGORÍAS + ORDEN ══════════ -->
+    @if (productos().length) {
+      <div class="store-toolbar">
+        <nav class="chips" aria-label="Categorías de la tienda">
+          @for (cat of categorias(); track cat) {
+            <button
+              class="chip"
+              [class.on]="categoriaActiva() === cat"
+              (click)="categoriaActiva.set(cat)">
+              {{ cat }}
+            </button>
+          }
+        </nav>
+
+        <select class="sort" aria-label="Ordenar por" (change)="cambiarOrden($event)">
+          <option value="relevancia">Relevancia</option>
+          <option value="ventas">Más vendidos</option>
+          <option value="precio_asc">Precio: menor a mayor</option>
+          <option value="precio_desc">Precio: mayor a menor</option>
+          <option value="rating">Mejor calificados</option>
+        </select>
+      </div>
+    }
 
     <!-- ══════════ GRID DE PRODUCTOS ══════════ -->
     @if (productosFiltrados().length) {
       <div class="grid">
         @for (p of productosFiltrados(); track p.id) {
           <article class="card">
-            <a class="card-media" [href]="'/producto/' + p.id" [style.background]="p.tono">
-              @if (p.badge) {
-                <span class="badge">{{ p.badge }}</span>
+            <a class="card-media" [routerLink]="['/', t.slug, 'producto', p.id]">
+              @if (badgeLabel(p); as label) {
+                <span class="badge" [class.badge--oferta]="label === 'Oferta'">{{ label }}</span>
               }
 
-              @if (p.imagen) {
-                <img [src]="p.imagen" [alt]="p.nombre" loading="lazy">
-              } @else {
-                <span class="ph-letter" aria-hidden="true">{{ p.nombre[0] }}</span>
+              <span class="ph-letter" aria-hidden="true">{{ p.name[0] }}</span>
+              @if (imagen(p); as url) {
+                <img [src]="url" [alt]="p.name" loading="lazy">
               }
 
               <button
@@ -72,7 +139,7 @@
                 [attr.aria-pressed]="favoritos().has(p.id)"
                 (click)="toggleFavorito(p.id, $event)"
                 aria-label="Agregar a favoritos">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="1.8">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1D1D1F" stroke-width="1.8">
                   <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21.2l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"/>
                 </svg>
               </button>
@@ -81,26 +148,34 @@
             </a>
 
             <div class="card-info">
-              <h3 class="card-name">{{ p.nombre }}</h3>
+              <h3 class="card-name">{{ p.name }}</h3>
               <div class="card-price">
-                <span class="price-now">{{ cop(p.precio) }}</span>
-                @if (p.anterior) {
-                  <span class="price-old">{{ cop(p.anterior) }}</span>
+                <span class="price-now" [class.is-sale]="p.previous_price">{{ cop(p.price) }}</span>
+                @if (p.previous_price) {
+                  <span class="price-old">{{ cop(p.previous_price) }}</span>
                 }
               </div>
-              <div class="card-meta">
-                <span class="star">★</span> {{ p.rating }}
-                <span class="dot-sep"></span>
-                {{ p.ventas }} vendidos
-              </div>
+              @if (p.sold_count > 0 || rating(p) > 0) {
+                <div class="card-meta">
+                  @if (rating(p) > 0) {
+                    <span class="star">★</span> {{ p.rating_average }}
+                    <span class="dot-sep"></span>
+                  }
+                  {{ p.sold_count }} vendidos
+                </div>
+              }
             </div>
           </article>
         }
       </div>
     } @else {
       <div class="store-empty small">
-        <p class="empty-title">Sin productos en esta categoría</p>
-        <p class="empty-text">Prueba con otra categoría de la tienda.</p>
+        <p class="empty-title">
+          {{ productos().length ? 'Sin productos en esta categoría' : 'Esta tienda aún no tiene productos' }}
+        </p>
+        <p class="empty-text">
+          {{ productos().length ? 'Prueba con otra categoría de la tienda.' : 'Vuelve pronto para ver sus novedades.' }}
+        </p>
       </div>
     }
   </div>

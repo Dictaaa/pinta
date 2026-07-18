@@ -1,16 +1,16 @@
 import { Injectable, signal } from '@angular/core';
-import { StoreProfile } from '../../features/store/pages/store/store';
 
-/**
- * Contexto de tienda activa.
- * El componente Store lo setea al cargar y lo limpia al salir;
- * el Layout (header) lo lee para cambiar de modo marketplace → tienda.
- */
+export interface StoreContext {
+  slug: string;
+  nombre: string;
+  verificada: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class StoreContextService {
-  readonly tiendaActual = signal<StoreProfile | null>(null);
+  readonly tiendaActual = signal<StoreContext | null>(null);
 
-  set(tienda: StoreProfile): void {
+  set(tienda: StoreContext): void {
     this.tiendaActual.set(tienda);
   }
 

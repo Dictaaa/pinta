@@ -1,56 +1,71 @@
+// src/app/app.routes.ts
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth-guard';
+import { shopOwnerGuard } from './core/guards/shop-owner-guard';
 
 export const routes: Routes = [
-  // ── Home / marketplace ──────────────────────────────
+  // ── Home / landing ──────────────────────────────────
   {
     path: '',
     loadComponent: () =>
       import('./features/home/pages/home/home').then(m => m.Home),
   },
 
-  {
-  path: 'iniciar-sesion',
-  loadComponent: () =>
-    import('./features/auth/login/pages/login/login').then(m => m.Login),
-},
-{
-  path: 'registro',
-  loadComponent: () =>
-    import('./features/auth/register/pages/register/register').then(m => m.Register),
-},
-{
-  path: 'dashboard',
-  canActivate: [authGuard],
-  loadComponent: () =>
-    import('./features/dashboard/pages/dashboard/dashboard').then(m => m.Dashboard),
-},
-
-{
-      path: 'productos',
-      canActivate: [authGuard],
-      loadComponent: () =>
-        import('./features/product/pages/product/product').then(m => m.Product),
-    },
-
   // ── Rutas fijas — SIEMPRE antes de :slug ────────────
+  {
+    path: 'iniciar-sesion',
+    loadComponent: () =>
+      import('./features/auth/login/pages/login/login').then(m => m.Login),
+  },
+  {
+    path: 'registro',
+    loadComponent: () =>
+      import('./features/auth/register/pages/register/register').then(m => m.Register),
+  },
   {
     path: 'carrito',
     loadComponent: () =>
       import('./features/cart/pages/cart/cart').then(m => m.Cart),
   },
-  {
-    path: 'producto/:id',
-    loadComponent: () =>
-      import('./features/product/pages/product/product').then(m => m.Product),
-  },
 
-  // ── Perfil de la tienda → pinta.co/tienda ───────────
-  // SIEMPRE al final — captura cualquier :slug no definido arriba
+  // ── Compatibilidad: /dashboard sin slug redirige ────
+  // (links viejos, marcadores, el navigate del login si no lo cambias)
+  { path: 'dashboard', redirectTo: '' },
+
+  // ═════════════════════════════════════════════════════
+  //  TODO LO DE UNA TIENDA VIVE BAJO SU SLUG
+  //  lapintaco.com/MiTienda/...
+  //  SIEMPRE al final — captura cualquier :slug
+  // ═════════════════════════════════════════════════════
   {
     path: ':slug',
-    loadComponent: () =>
-      import('./features/store/pages/store/store').then(m => m.Store),
+    children: [
+      // ── Público (clientes) ──
+      { path: '', redirectTo: 'catalogo', pathMatch: 'full' },
+      {
+        path: 'catalogo',
+        loadComponent: () =>
+          import('./features/store/pages/store/store').then(m => m.Store),
+      },
+      {
+        path: 'producto/:id',
+        loadComponent: () =>
+          import('./features/product/pages/product/product').then(m => m.Product),
+      },
+
+      // ── Privado (dueño de ESTA tienda) ──
+      {
+        path: 'dashboard',
+        canActivate: [shopOwnerGuard],
+        loadComponent: () =>
+          import('./features/dashboard/pages/dashboard/dashboard').then(m => m.Dashboard),
+      },
+      {
+        path: 'productos',
+        canActivate: [shopOwnerGuard],
+        loadComponent: () =>
+          import('./features/dashboard/pages/products/products').then(m => m.Products),
+      },
+    ],
   },
 
   { path: '**', redirectTo: '' },

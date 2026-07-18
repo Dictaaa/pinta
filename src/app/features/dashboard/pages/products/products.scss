@@ -1,0 +1,306 @@
+$bg: var(--p-bg);
+$surface: var(--p-surface);
+$text: var(--p-text);
+$text-2: var(--p-text-2);
+$border: var(--p-border);
+$radius: var(--p-radius);
+$shadow: var(--p-shadow-card);
+$ease: var(--p-ease);
+
+:host { display: block; }
+
+.products-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 40px 88px;
+}
+
+/* ══════════ CABECERA ══════════ */
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+
+  h1 { font-size: 26px; }
+}
+
+.plan-usage {
+  margin-top: 10px;
+
+  &__text {
+    font-size: 13px;
+    color: $text-2;
+
+    b { color: $text; }
+  }
+
+  &__bar {
+    width: 260px;
+    height: 6px;
+    margin-top: 8px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, .07);
+    overflow: hidden;
+  }
+
+  &__fill {
+    height: 100%;
+    border-radius: 999px;
+    background: $text;
+    transition: width .4s $ease;
+  }
+}
+
+.btn-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: $text;
+  color: #FFFFFF;
+  border-radius: 999px;
+  padding: 12px 24px;
+  font-size: 13.5px;
+  font-weight: 600;
+  flex-shrink: 0;
+  transition: transform .2s $ease, box-shadow .2s $ease, opacity .15s;
+
+  &:hover {
+    opacity: .9;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .2);
+  }
+
+  &.disabled {
+    opacity: .45;
+    pointer-events: none;
+  }
+}
+
+.limit-alert {
+  background: $surface;
+  border-radius: 12px;
+  box-shadow: $shadow;
+  padding: 13px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 18px;
+}
+
+/* ══════════ PANEL / TABLA ══════════ */
+.panel {
+  background: $surface;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  overflow: hidden;
+}
+
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+th {
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: $text-2;
+  padding: 13px 20px;
+  border-bottom: 1px solid $border;
+  white-space: nowrap;
+}
+
+td {
+  padding: 13px 20px;
+  border-bottom: 1px solid $border;
+  vertical-align: middle;
+}
+
+tbody tr {
+  transition: background .12s, opacity .2s;
+
+  &:hover { background: $bg; }
+  &:last-child td { border-bottom: none; }
+
+  &.row-off {
+    opacity: .5;
+  }
+}
+
+.muted { color: $text-2; }
+.num { text-align: right; }
+.strong { font-weight: 700; letter-spacing: -.01em; }
+.stock-out { color: $text; font-weight: 700; }
+
+/* Producto: miniatura + nombre */
+.prod {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.prod__thumb {
+  width: 44px;
+  height: 55px;         /* 4:5 */
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: $bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  span {
+    font-size: 17px;
+    font-weight: 300;
+    color: rgba(29, 29, 31, .3);
+  }
+}
+
+.prod__name {
+  font-weight: 600;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+/* Switch iOS */
+.switch {
+  width: 42px;
+  height: 25px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .14);
+  position: relative;
+  transition: background .2s;
+  flex-shrink: 0;
+
+  &__knob {
+    position: absolute;
+    top: 2.5px;
+    left: 2.5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+    transition: transform .2s $ease;
+  }
+
+  &.on {
+    background: #2E7D4F;   /* verde funcional: visible en la tienda */
+
+    .switch__knob { transform: translateX(17px); }
+  }
+}
+
+/* Acciones */
+.actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: $text-2;
+  transition: background .15s, color .15s;
+
+  &:hover {
+    background: rgba(0, 0, 0, .06);
+    color: $text;
+  }
+}
+
+/* ══════════ VACÍO / SKELETON ══════════ */
+.empty {
+  background: $surface;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  padding: 64px 40px;
+  text-align: center;
+
+  .empty-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .empty-text {
+    font-size: 13.5px;
+    color: $text-2;
+    margin-bottom: 22px;
+  }
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+.sk {
+  background: linear-gradient(90deg, #EDEDF0 25%, #E4E4E8 50%, #EDEDF0 75%);
+  background-size: 200% 100%;
+  animation: sk-pulse 1.4s ease infinite;
+}
+
+.sk-row {
+  height: 62px;
+  border-bottom: 1px solid $border;
+
+  &:last-child { border-bottom: none; }
+}
+
+@keyframes sk-pulse {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* ══════════ RESPONSIVE ══════════ */
+@media (max-width: 1024px) {
+  .products-page { padding: 24px 28px 64px; }
+}
+
+@media (max-width: 640px) {
+  .products-page { padding: 18px 18px 56px; }
+
+  .page-head {
+    flex-direction: column;
+
+    h1 { font-size: 22px; }
+  }
+
+  .plan-usage__bar { width: 100%; }
+
+  .btn-new { width: 100%; justify-content: center; }
+
+  .hide-sm { display: none; }
+
+  th, td { padding: 12px 14px; }
+
+  .prod__name { max-width: 140px; }
+}

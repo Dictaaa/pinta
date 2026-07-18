@@ -67,16 +67,36 @@ export class ProductFormModal {
     condition: ['new'],
   });
 
-  constructor() {
-    this.productService.getCatalogs().subscribe(cat => {
-      this.catalogos.set(cat);
-      this.tallas.set(
-        cat.sizes.map(s => ({ size_id: s.id, name: s.name, selected: false, stock: 0 })),
-      );
-      // Precargar DESPUÉS de tener las tallas del catálogo
-      if (this.data?.producto) this.precargar(this.data.producto);
-    });
-  }
+  // nuevo signal + computed
+categoriaSizeType = signal<'clothing' | 'shoes' | 'none'>('clothing');
+stockUnico = signal(0);   // para categorías sin talla (bolsos)
+
+constructor() {
+  this.productService.getCatalogs().subscribe(cat => {
+    this.catalogos.set(cat);
+    this.armarTallas('clothing');
+    if (this.data?.producto) this.precargar(this.data.producto);
+  });
+
+  // Al cambiar de categoría, cambiar el juego de tallas
+  this.form.controls.category_id.valueChanges.subscribe(catId => {
+    const categoria = this.catalogos()?.categories.find(c => c.id === catId);
+    const tipo = categoria?.size_type ?? 'clothing';
+    if (tipo !== this.categoriaSizeType()) {
+      this.categoriaSizeType.set(tipo);
+      this.armarTallas(tipo);   // resetea selecciones: M no aplica a tenis
+    }
+  });
+}
+
+private armarTallas(tipo: 'clothing' | 'shoes' | 'none'): void {
+  const sizes = this.catalogos()?.sizes ?? [];
+  this.tallas.set(
+    sizes
+      .filter(s => s.size_type === tipo)
+      .map(s => ({ size_id: s.id, name: s.name, selected: false, stock: 0 })),
+  );
+}
 
   private precargar(p: ApiProduct): void {
     this.form.patchValue({
@@ -173,14 +193,25 @@ export class ProductFormModal {
       return;
     }
 
-    const variantes: VariantInput[] = this.tallas()
-      .filter(t => t.selected)
-      .map(t => ({ size_id: t.size_id, stock: t.stock }));
+    let variantes: VariantInput[];
 
-    if (variantes.length === 0) {
-      this.error.set('Selecciona al menos una talla con stock.');
-      return;
-    }
+if (this.categoriaSizeType() === 'none') {
+  // Bolsos/accesorios: una sola variante sin talla
+  if (this.stockUnico() < 1) {
+    this.error.set('Indica cuántas unidades tienes disponibles.');
+    return;
+  }
+  variantes = [{ size_id: null, stock: this.stockUnico() }];
+} else {
+  variantes = this.tallas()
+    .filter(t => t.selected)
+    .map(t => ({ size_id: t.size_id, stock: t.stock }));
+
+  if (variantes.length === 0) {
+    this.error.set('Selecciona al menos una talla con stock.');
+    return;
+  }
+}
 
     if (!this.esEdicion() && this.imagenesNuevas().length === 0) {
       this.error.set('Sube al menos una foto del producto.');

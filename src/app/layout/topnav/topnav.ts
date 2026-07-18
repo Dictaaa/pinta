@@ -39,22 +39,14 @@ export class Topnav {
 
   /** Modo de la barra según la ruta */
   modo = computed<ModoNav>(() => {
-    const url = this.url().split('?')[0];
+  const url = this.url().split('?')[0];
+  const segments = url.split('/').filter(Boolean);   // ['MiTienda','dashboard']
 
-    if (url.startsWith('/iniciar-sesion') || url.startsWith('/registro')) {
-      return 'oculta';
-    }
-    if (url.startsWith('/dashboard')) {
-      return 'dashboard';
-    }
-    if (url.startsWith('/productos')) {
-      return 'dashboard';
-    }
-    if (url === '/' || url === '') {
-      return 'landing';
-    }
-    return 'compra';
-  });
+  if (url.startsWith('/iniciar-sesion') || url.startsWith('/registro')) return 'oculta';
+  if (segments.length >= 2 && ['dashboard', 'productos'].includes(segments[1])) return 'dashboard';
+  if (segments.length === 0) return 'landing';
+  return 'compra';
+});
 
   /** Título de la página actual (modo dashboard) */
   tituloPagina = computed(() => {

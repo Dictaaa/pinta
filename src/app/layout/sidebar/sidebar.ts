@@ -1,7 +1,7 @@
 import { Component, HostListener, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { UiService } from '../../core/services/ui';
-import { AuthService } from '../../core/services/auth'; // ajusta si tu archivo se llama auth.service
+import { AuthService } from '../../core/services/api/auth.service'; // ajusta si tu archivo se llama auth.service
 
 @Component({
   selector: 'app-sidebar',
