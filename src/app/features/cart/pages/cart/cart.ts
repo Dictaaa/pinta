@@ -1,5 +1,6 @@
+// src/app/features/cart/pages/cart/cart.ts
 import { Component, computed, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CartItem, CartService } from '../../../../core/services/cart';
 
 interface GrupoTienda {
@@ -19,9 +20,9 @@ interface GrupoTienda {
 })
 export class Cart {
   cart = inject(CartService);
+  private router = inject(Router);
 
   // TODO: el envío real vendrá del backend según ciudad/tienda.
-  // Mock: tarifa plana por tienda.
   private readonly ENVIO_POR_TIENDA = 12000;
 
   /** Items agrupados por tienda — cada tienda despacha por separado */
@@ -55,20 +56,19 @@ export class Cart {
 
   /* ── Acciones ───────────────────────────────── */
   masCantidad(item: CartItem): void {
-    this.cart.cambiarCantidad(item.productoId, item.cantidad + 1, item.talla);
+    this.cart.cambiarCantidad(item.productoId, item.cantidad + 1, item.variantId);
   }
 
   menosCantidad(item: CartItem): void {
-    this.cart.cambiarCantidad(item.productoId, item.cantidad - 1, item.talla);
+    this.cart.cambiarCantidad(item.productoId, item.cantidad - 1, item.variantId);
   }
 
   quitar(item: CartItem): void {
-    this.cart.quitar(item.productoId, item.talla);
+    this.cart.quitar(item.productoId, item.variantId);
   }
 
   pagar(): void {
-    // TODO: navegación a checkout cuando exista
-    console.log('Checkout →', this.cart.items());
+    this.router.navigate(['/checkout']);
   }
 
   /* ── Helpers ────────────────────────────────── */

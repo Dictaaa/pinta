@@ -1,0 +1,175 @@
+<div class="checkout-page">
+
+  @if (resultado(); as r) {
+    <!-- ══════════ CONFIRMACIÓN ══════════ -->
+    <div class="confirm-card">
+      <div class="confirm-icon">✓</div>
+      <h1>¡Pedido recibido!</h1>
+      <p class="confirm-number">Número de pedido <b>{{ r.order_number }}</b></p>
+      <p class="confirm-total">Total: {{ cop(r.total) }}</p>
+
+      <div class="confirm-instructions">
+        <p class="instructions-title">Para completar tu compra:</p>
+        <p class="instructions-text">
+          Realiza el pago por el medio que prefieras y envía el comprobante
+          directamente a cada tienda. Ellos confirmarán tu pedido al recibirlo.
+        </p>
+
+        <div class="shops-list">
+          @for (s of r.shops; track s.shop_id) {
+            <div class="shop-item">
+              <div class="shop-item__info">
+                <span class="shop-item__name">{{ s.name }}</span>
+                <span class="shop-item__subtotal">{{ cop(s.subtotal) }}</span>
+              </div>
+              @if (s.whatsapp) {
+                <a class="btn-whatsapp" [href]="whatsappLink(s.whatsapp)" target="_blank" rel="noopener">
+                  Enviar comprobante
+                </a>
+              } @else {
+                <span class="no-whatsapp">Sin WhatsApp registrado</span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <a class="btn-dark" routerLink="/">Volver al inicio</a>
+    </div>
+
+  } @else {
+    <!-- ══════════ FORMULARIO ══════════ -->
+    <h1 class="page-title">Finalizar compra</h1>
+
+    @if (error()) {
+      <p class="form-error" role="alert">{{ error() }}</p>
+    }
+
+    @if (cart.items().length === 0) {
+      <div class="empty">
+        <p class="empty-title">Tu carrito está vacío</p>
+        <a class="btn-dark" routerLink="/">Explorar productos</a>
+      </div>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="confirmar()" novalidate>
+        <div class="checkout-layout">
+
+          <div class="col-main">
+            <!-- Contacto -->
+            <section class="panel">
+              <h2>Tus datos</h2>
+              <div class="field-row">
+                <label class="field" [class.invalid]="campoInvalido('first_name')">
+                  <span class="field-label">Nombre</span>
+                  <input type="text" formControlName="first_name">
+                </label>
+                <label class="field" [class.invalid]="campoInvalido('last_name')">
+                  <span class="field-label">Apellido</span>
+                  <input type="text" formControlName="last_name">
+                </label>
+              </div>
+              <div class="field-row">
+                <label class="field" [class.invalid]="campoInvalido('email')">
+                  <span class="field-label">Correo electrónico</span>
+                  <input type="email" formControlName="email">
+                </label>
+                <label class="field" [class.invalid]="campoInvalido('phone')">
+                  <span class="field-label">Celular</span>
+                  <input type="tel" formControlName="phone" maxlength="10" placeholder="3001234567">
+                </label>
+              </div>
+            </section>
+
+            <!-- Envío -->
+            <section class="panel">
+              <h2>Dirección de envío</h2>
+
+              <label class="field" [class.invalid]="campoInvalido('city_id')">
+                <span class="field-label">Ciudad</span>
+                <select formControlName="city_id">
+                  <option [ngValue]="null" disabled>Selecciona tu ciudad</option>
+                  @for (c of ciudades(); track c.id) {
+                    <option [ngValue]="c.id">{{ c.name }}, {{ c.department }}</option>
+                  }
+                </select>
+              </label>
+
+              <label class="field" [class.invalid]="campoInvalido('address_line')">
+                <span class="field-label">Dirección</span>
+                <input type="text" formControlName="address_line" placeholder="Calle 10 # 5-23">
+              </label>
+
+              <label class="field">
+                <span class="field-label">Apto, torre, referencia (opcional)</span>
+                <input type="text" formControlName="address_detail" placeholder="Apto 302, torre 2">
+              </label>
+
+              <label class="check">
+                <input type="checkbox" [checked]="mismoReceptor()" (change)="toggleMismoReceptor()">
+                <span>Yo mismo recibo el pedido</span>
+              </label>
+
+              @if (!mismoReceptor()) {
+                <div class="field-row">
+                  <label class="field" [class.invalid]="campoInvalido('receiver_name')">
+                    <span class="field-label">Nombre de quien recibe</span>
+                    <input type="text" formControlName="receiver_name">
+                  </label>
+                  <label class="field" [class.invalid]="campoInvalido('receiver_phone')">
+                    <span class="field-label">Celular de quien recibe</span>
+                    <input type="tel" formControlName="receiver_phone" maxlength="10">
+                  </label>
+                </div>
+              }
+            </section>
+          </div>
+
+          <!-- Resumen -->
+          <div class="col-side">
+            <section class="panel summary">
+              <h2>Resumen</h2>
+
+              @for (g of grupos(); track g.nombre) {
+                <div class="summary-shop">
+                  <span class="summary-shop__name">{{ g.nombre }}</span>
+                  @for (item of g.items; track item.productoId + '-' + item.variantId) {
+                    <div class="summary-item">
+                      <span>{{ item.cantidad }}× {{ item.nombre }}</span>
+                      <span>{{ cop(item.precio * item.cantidad) }}</span>
+                    </div>
+                  }
+                </div>
+              }
+
+              <div class="summary-row">
+                <span>Subtotal</span>
+                <span>{{ cop(cart.total()) }}</span>
+              </div>
+              <div class="summary-row">
+                <span>Envío ({{ grupos().length }})</span>
+                <span>{{ cop(envioTotal()) }}</span>
+              </div>
+              <div class="summary-total">
+                <span>Total</span>
+                <span>{{ cop(totalGeneral()) }}</span>
+              </div>
+
+              <button type="submit" class="btn-confirm" [disabled]="enviando()">
+                @if (enviando()) {
+                  <span class="spinner"></span> Procesando…
+                } @else {
+                  Confirmar pedido
+                }
+              </button>
+
+              <p class="summary-note">
+                Pagarás directamente a cada tienda. Tu pedido queda pendiente
+                hasta que confirmen tu pago.
+              </p>
+            </section>
+          </div>
+        </div>
+      </form>
+    }
+  }
+</div>

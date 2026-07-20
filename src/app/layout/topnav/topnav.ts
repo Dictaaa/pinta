@@ -43,7 +43,7 @@ export class Topnav {
   const segments = url.split('/').filter(Boolean);   // ['MiTienda','dashboard']
 
   if (url.startsWith('/iniciar-sesion') || url.startsWith('/registro')) return 'oculta';
-  if (segments.length >= 2 && ['dashboard', 'productos'].includes(segments[1])) return 'dashboard';
+  if (segments.length >= 2 && ['dashboard', 'productos', 'plan', 'pedidos'].includes(segments[1])) return 'dashboard';
   if (segments.length === 0) return 'landing';
   return 'compra';
 });
@@ -53,9 +53,10 @@ export class Topnav {
     const url = this.url().split('?')[0];
     const titulos: Record<string, string> = {
       '/dashboard': 'Panel',
-      '/productos': 'Productos',
+      '/dashboard/productos': 'Productos',
       '/dashboard/pedidos': 'Pedidos',
       '/dashboard/perfil': 'Perfil de tienda',
+      '/dashboard/plan': 'Mi plan',
     };
     return titulos[url] ?? 'Panel';
   });

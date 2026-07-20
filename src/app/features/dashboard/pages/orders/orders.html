@@ -1,0 +1,101 @@
+<div class="orders-page">
+  <header class="page-head">
+    <h1>Pedidos</h1>
+  </header>
+
+  @if (cargando()) {
+    <div class="panel">
+      @for (i of [1,2,3]; track i) {
+        <div class="sk sk-row"></div>
+      }
+    </div>
+
+  } @else if (error()) {
+    <div class="empty">
+      <p class="empty-title">{{ error() }}</p>
+      <button class="btn-outline" (click)="cargar()">Reintentar</button>
+    </div>
+
+  } @else if (pedidos().length === 0) {
+    <div class="empty">
+      <p class="empty-title">Aún no tienes pedidos</p>
+      <p class="empty-text">Cuando un cliente compre en tu tienda, aparecerá aquí.</p>
+    </div>
+
+  } @else {
+    <div class="orders-list">
+      @for (p of pedidos(); track p.id) {
+        <article class="order-card">
+          <button class="order-head" (click)="toggleExpandir(p.id)">
+            <div class="order-head__main">
+              <span class="order-number">{{ p.order.order_number }}</span>
+              <span class="order-buyer">{{ p.order.buyer.first_name }} {{ p.order.buyer.last_name }}</span>
+            </div>
+            <span class="estado" [attr.data-estado]="p.status">{{ estadoLabel(p.status) }}</span>
+            <span class="order-total">{{ cop(p.subtotal) }}</span>
+            <svg class="chev" [class.open]="expandido() === p.id" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+
+          @if (expandido() === p.id) {
+            <div class="order-detail">
+
+              <div class="detail-grid">
+                <div>
+                  <span class="detail-label">Contacto</span>
+                  <p>{{ p.order.buyer.phone }}</p>
+                  <p class="muted">{{ p.order.buyer.email }}</p>
+                </div>
+                <div>
+                  <span class="detail-label">Enviar a</span>
+                  <p>{{ p.order.shipping_address.receiver_name }} · {{ p.order.shipping_address.receiver_phone }}</p>
+                  <p class="muted">
+                    {{ p.order.shipping_address.address_line }}
+                    @if (p.order.shipping_address.address_detail) {
+                      , {{ p.order.shipping_address.address_detail }}
+                    }
+                    — {{ p.order.shipping_address.city.name }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="detail-items">
+                @for (item of p.items; track item.id) {
+                  <div class="detail-item">
+                    <span>{{ item.quantity }}× {{ item.product_name }}</span>
+                    @if (item.size_name) {
+                      <span class="muted">Talla {{ item.size_name }}</span>
+                    }
+                    <span class="strong">{{ cop(item.unit_price) }}</span>
+                  </div>
+                }
+              </div>
+
+              @if (p.tracking_number) {
+                <p class="tracking">Guía: <b>{{ p.tracking_number }}</b></p>
+              }
+
+              <!-- Acciones según estado -->
+              <div class="detail-actions">
+                @switch (p.status) {
+                  @case ('pending') {
+                    <button class="btn-outline" [disabled]="procesando() === p.id" (click)="rechazar(p)">Rechazar</button>
+                    <button class="btn-dark" [disabled]="procesando() === p.id" (click)="confirmar(p)">Confirmar pago</button>
+                  }
+                  @case ('confirmed') {
+                    <button class="btn-outline" [disabled]="procesando() === p.id" (click)="rechazar(p)">Rechazar</button>
+                    <button class="btn-dark" [disabled]="procesando() === p.id" (click)="enviar(p)">Marcar enviado</button>
+                  }
+                  @case ('shipped') {
+                    <button class="btn-dark" [disabled]="procesando() === p.id" (click)="entregar(p)">Marcar entregado</button>
+                  }
+                }
+              </div>
+            </div>
+          }
+        </article>
+      }
+    </div>
+  }
+</div>

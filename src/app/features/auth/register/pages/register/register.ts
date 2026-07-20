@@ -48,6 +48,10 @@ export class Register {
     phone: ['', [Validators.required, Validators.pattern(/^3\d{9}$/)]],
     shop_name: ['', [Validators.required, Validators.minLength(3)]],
     city_id: [null as number | null, Validators.required],
+    whatsapp: ['', [Validators.pattern(/^3\d{9}$/)]],
+    instagram: [''],
+    facebook: [''],
+    tiktok: [''],
   });
 
   constructor() {
@@ -136,6 +140,10 @@ export class Register {
     fd.append('shop_name', raw.shop_name.trim());
     fd.append('slug', this.slug());
     fd.append('city_id', String(raw.city_id));
+    if (raw.whatsapp) fd.append('whatsapp', raw.whatsapp);
+    if (raw.instagram) fd.append('instagram', raw.instagram.trim().replace(/^@/, ''));
+    if (raw.facebook) fd.append('facebook', raw.facebook.trim());
+    if (raw.tiktok) fd.append('tiktok', raw.tiktok.trim().replace(/^@/, ''));
     if (this.logoFile()) fd.append('logo', this.logoFile()!);
 
     this.enviando.set(true);

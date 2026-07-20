@@ -239,3 +239,71 @@ tbody tr {
     padding-right: 16px;
   }
 }
+
+/* ═══ AGREGAR al dashboard.scss existente ═══
+   Skeleton de carga + estado vacío + alerta de plan */
+
+.sk {
+  background: linear-gradient(90deg, #EDEDF0 25%, #E4E4E8 50%, #EDEDF0 75%);
+  background-size: 200% 100%;
+  animation: sk-pulse 1.4s ease infinite;
+  border-radius: var(--p-radius);
+}
+
+@keyframes sk-pulse {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+.sk-head { height: 48px; margin-bottom: 24px; max-width: 320px; }
+.sk-kpi { height: 100px; }
+.sk-panel { height: 220px; margin-top: 18px; }
+
+.alert {
+  background: var(--p-surface);
+  box-shadow: var(--p-shadow-card);
+  border-radius: 12px;
+  padding: 13px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 18px;
+
+  a {
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.empty {
+  padding: 48px 24px;
+  text-align: center;
+
+  &.small { padding: 40px 24px; }
+
+  .empty-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .empty-text {
+    font-size: 13px;
+    color: var(--p-text-2);
+  }
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--p-surface);
+  border: 1px solid var(--p-border);
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background .15s;
+
+  &:hover { background: var(--p-bg); }
+}

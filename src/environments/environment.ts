@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
 
-  apiUrl: 'https://pintaback.onrender.com'
+  apiUrl: 'http://localhost:4000'
 };

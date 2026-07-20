@@ -26,6 +26,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/cart/pages/cart/cart').then(m => m.Cart),
   },
+  {
+    path: 'checkout',
+    loadComponent: () =>
+      import('./features/checkout/pages/checkout/checkout').then(m => m.Checkout),
+  },
 
   // ── Compatibilidad: /dashboard sin slug redirige ────
   // (links viejos, marcadores, el navigate del login si no lo cambias)
@@ -65,6 +70,19 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/dashboard/pages/products/products').then(m => m.Products),
       },
+      // en app.routes.ts, dentro de children de :slug:
+      {
+        path: 'plan',
+        canActivate: [shopOwnerGuard],
+        loadComponent: () =>
+          import('./features/dashboard/pages/plan/plan').then(m => m.Plan),
+      },
+      {
+        path: 'pedidos',
+        canActivate: [shopOwnerGuard],
+        loadComponent: () =>
+          import('./features/dashboard/pages/orders/orders').then(m => m.Orders),
+      }
     ],
   },
 

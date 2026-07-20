@@ -1,8 +1,14 @@
 // src/app/features/store/pages/store/store.ts
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import {
+  AfterViewInit, Component, DestroyRef, ElementRef, ViewChild,
+  inject, signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { ShopService, PublicShop } from '../../../../core/services/api/shop.service';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import {
+  CategoryCount, CatalogQuery, PublicShop, ShopService,
+} from '../../../../core/services/api/shop.service';
 import { ApiProduct } from '../../../../core/services/product';
 import { StoreContextService } from '../../../../core/services/store-context';
 
@@ -15,68 +21,83 @@ type Orden = 'relevancia' | 'ventas' | 'precio_asc' | 'precio_desc' | 'rating';
   templateUrl: './store.html',
   styleUrl: './store.scss',
 })
-export class Store {
+export class Store implements AfterViewInit {
   private route = inject(ActivatedRoute);
   private shopService = inject(ShopService);
   private storeCtx = inject(StoreContextService);
   private destroyRef = inject(DestroyRef);
 
+  @ViewChild('sentinel') sentinel?: ElementRef<HTMLElement>;
+  private observer?: IntersectionObserver;
+
   /* ── Estado ─────────────────────────────────── */
+  slugActual = '';
   tienda = signal<PublicShop | null>(null);
-  productos = signal<ApiProduct[]>([]);
-  cargando = signal(true);
+  categorias = signal<CategoryCount[]>([]);
+  productos = signal<ApiProduct[]>([]);   // acumulado de las páginas ya pedidas
+
+  cargando = signal(true);       // primera carga de la tienda
+  cargandoMas = signal(false);   // cargando la siguiente página
   noEncontrada = signal(false);
 
   categoriaActiva = signal<string>('Todo');
   orden = signal<Orden>('relevancia');
+  busqueda = signal('');
   favoritos = signal<Set<number>>(new Set());
 
-  /* ── Derivados ──────────────────────────────── */
-  categorias = computed(() => {
-    const unicas = [...new Set(
-      this.productos()
-        .map(p => p.category?.name)
-        .filter((n): n is string => !!n),
-    )];
-    return ['Todo', ...unicas];
-  });
-
-  productosFiltrados = computed(() => {
-    const cat = this.categoriaActiva();
-    let lista = this.productos()
-      .filter(p => cat === 'Todo' || p.category?.name === cat);
-
-    switch (this.orden()) {
-      case 'ventas':
-        lista = [...lista].sort((a, b) => b.sold_count - a.sold_count); break;
-      case 'precio_asc':
-        lista = [...lista].sort((a, b) => Number(a.price) - Number(b.price)); break;
-      case 'precio_desc':
-        lista = [...lista].sort((a, b) => Number(b.price) - Number(a.price)); break;
-      case 'rating':
-        lista = [...lista].sort((a, b) => Number(b.rating_average) - Number(a.rating_average)); break;
-    }
-    return lista;
-  });
+  private page = signal(1);
+  private hasMore = signal(false);
+  private busquedaSubject = new Subject<string>();
 
   constructor() {
     // El componente se REUTILIZA al navegar entre slugs
     this.route.paramMap
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(params => this.cargar(params.get('slug') ?? ''));
+      .subscribe(params => this.cargarTienda(params.get('slug') ?? ''));
 
-    this.destroyRef.onDestroy(() => this.storeCtx.clear());
+    // Búsqueda con debounce — cada tecla no dispara un request
+    this.busquedaSubject
+      .pipe(debounceTime(400), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe(texto => {
+        this.busqueda.set(texto);
+        this.reiniciarYcargar();
+      });
+
+    this.destroyRef.onDestroy(() => {
+      this.storeCtx.clear();
+      this.observer?.disconnect();
+    });
   }
 
-  private cargar(slug: string): void {
+  ngAfterViewInit(): void {
+    this.observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && this.hasMore() && !this.cargandoMas()) {
+          this.cargarSiguientePagina();
+        }
+      },
+      { rootMargin: '400px' },
+    );
+    if (this.sentinel) this.observer.observe(this.sentinel.nativeElement);
+  }
+
+  /* ── Carga inicial de la tienda (nueva URL / nuevo slug) ── */
+  private cargarTienda(slug: string): void {
+    this.slugActual = slug;
     this.cargando.set(true);
     this.noEncontrada.set(false);
     this.categoriaActiva.set('Todo');
+    this.busqueda.set('');
+    this.orden.set('relevancia');
+    this.page.set(1);
+    this.productos.set([]);
 
-    this.shopService.getCatalog(slug).subscribe({
+    this.pedirPagina(1, true).subscribe({
       next: res => {
         this.tienda.set(res.shop);
+        this.categorias.set(res.categories);
         this.productos.set(res.products);
+        this.hasMore.set(res.pagination.has_more);
         this.storeCtx.set({
           slug: res.shop.slug,
           nombre: res.shop.name,
@@ -86,7 +107,6 @@ export class Store {
       },
       error: () => {
         this.tienda.set(null);
-        this.productos.set([]);
         this.storeCtx.clear();
         this.noEncontrada.set(true);
         this.cargando.set(false);
@@ -94,7 +114,63 @@ export class Store {
     });
   }
 
-  /* ── Acciones ───────────────────────────────── */
+  /** Cambió categoría, orden o búsqueda: se pide de nuevo desde la página 1 */
+  private reiniciarYcargar(): void {
+    this.page.set(1);
+    this.productos.set([]);
+    this.cargando.set(true);
+
+    this.pedirPagina(1, false).subscribe({
+      next: res => {
+        this.productos.set(res.products);
+        this.hasMore.set(res.pagination.has_more);
+        this.cargando.set(false);
+      },
+      error: () => this.cargando.set(false),
+    });
+  }
+
+  /** Scroll llegó al final: se pide la siguiente página y se concatena */
+  private cargarSiguientePagina(): void {
+    const siguiente = this.page() + 1;
+    this.cargandoMas.set(true);
+
+    this.pedirPagina(siguiente, false).subscribe({
+      next: res => {
+        this.productos.update(list => [...list, ...res.products]);
+        this.hasMore.set(res.pagination.has_more);
+        this.page.set(siguiente);
+        this.cargandoMas.set(false);
+      },
+      error: () => this.cargandoMas.set(false),
+    });
+  }
+
+  private pedirPagina(page: number, incluirTienda: boolean) {
+    const query: CatalogQuery = {
+      page,
+      category: this.categoriaActiva(),
+      q: this.busqueda() || undefined,
+      sort: this.orden(),
+    };
+    return this.shopService.getCatalog(this.slugActual, query);
+  }
+
+  /* ── Acciones desde el template ── */
+  cambiarCategoria(cat: string): void {
+    this.categoriaActiva.set(cat);
+    this.reiniciarYcargar();
+  }
+
+  cambiarBusqueda(texto: string): void {
+    this.busquedaSubject.next(texto);
+  }
+
+  cambiarOrden(ev: Event): void {
+    this.orden.set((ev.target as HTMLSelectElement).value as Orden);
+    this.reiniciarYcargar();
+  }
+
   toggleFavorito(id: number, ev: Event): void {
     ev.preventDefault();
     ev.stopPropagation();
@@ -103,11 +179,11 @@ export class Store {
     this.favoritos.set(set);
   }
 
-  cambiarOrden(ev: Event): void {
-    this.orden.set((ev.target as HTMLSelectElement).value as Orden);
+  hayMas(): boolean {
+    return this.hasMore();
   }
 
-  /* ── Helpers de presentación ────────────────── */
+  /* ── Helpers de presentación ── */
   imagen(p: ApiProduct): string | null {
     return p.images?.length ? p.images[0].url : null;
   }
@@ -128,12 +204,7 @@ export class Store {
   }
 
   iniciales(nombre: string): string {
-    return nombre
-      .split(' ')
-      .map(w => w[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase();
+    return nombre.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   }
 
   compacto(n: number): string {

@@ -74,36 +74,43 @@
 
       <div class="store-actions">
         @if (t.whatsapp) {
-          <a
-            class="btn-follow"
-            [href]="'https://wa.me/57' + t.whatsapp"
-            target="_blank"
-            rel="noopener">
+          <a class="btn-follow" [href]="'https://wa.me/57' + t.whatsapp" target="_blank" rel="noopener">
             WhatsApp
           </a>
         }
         @if (t.instagram) {
-          <a
-            class="btn-outline"
-            [href]="'https://instagram.com/' + t.instagram"
-            target="_blank"
-            rel="noopener">
+          <a class="btn-outline" [href]="'https://instagram.com/' + t.instagram" target="_blank" rel="noopener">
             Instagram
           </a>
         }
       </div>
     </header> -->
 
-    <!-- ══════════ CATEGORÍAS + ORDEN ══════════ -->
-    @if (productos().length) {
+    <!-- ══════════ BUSCADOR ══════════ -->
+    @if (t.products_count > 0) {
+      <div class="store-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input
+          type="search"
+          (input)="cambiarBusqueda($any($event.target).value)"
+          [placeholder]="'Buscar en ' + t.name"
+          aria-label="Buscar producto en esta tienda">
+      </div>
+
+      <!-- ══════════ CATEGORÍAS + ORDEN ══════════ -->
       <div class="store-toolbar">
         <nav class="chips" aria-label="Categorías de la tienda">
-          @for (cat of categorias(); track cat) {
+          <button class="chip" [class.on]="categoriaActiva() === 'Todo'" (click)="cambiarCategoria('Todo')">
+            Todo
+          </button>
+          @for (cat of categorias(); track cat.name) {
             <button
               class="chip"
-              [class.on]="categoriaActiva() === cat"
-              (click)="categoriaActiva.set(cat)">
-              {{ cat }}
+              [class.on]="categoriaActiva() === cat.name"
+              (click)="cambiarCategoria(cat.name)">
+              {{ cat.name }} <i>{{ cat.count }}</i>
             </button>
           }
         </nav>
@@ -119,9 +126,9 @@
     }
 
     <!-- ══════════ GRID DE PRODUCTOS ══════════ -->
-    @if (productosFiltrados().length) {
+    @if (productos().length) {
       <div class="grid">
-        @for (p of productosFiltrados(); track p.id) {
+        @for (p of productos(); track p.id) {
           <article class="card">
             <a class="card-media" [routerLink]="['/', t.slug, 'producto', p.id]">
               @if (badgeLabel(p); as label) {
@@ -168,13 +175,34 @@
           </article>
         }
       </div>
+
+      <!-- Sentinel: al entrar en pantalla, pide la siguiente página al backend -->
+      <div #sentinel class="scroll-sentinel" aria-hidden="true"></div>
+
+      @if (cargandoMas()) {
+        <div class="loading-more">
+          <span class="spinner--dark"></span>
+        </div>
+      }
     } @else {
       <div class="store-empty small">
         <p class="empty-title">
-          {{ productos().length ? 'Sin productos en esta categoría' : 'Esta tienda aún no tiene productos' }}
+          @if (busqueda()) {
+            Sin resultados para "{{ busqueda() }}"
+          } @else if (t.products_count > 0) {
+            Sin productos en esta categoría
+          } @else {
+            Esta tienda aún no tiene productos
+          }
         </p>
         <p class="empty-text">
-          {{ productos().length ? 'Prueba con otra categoría de la tienda.' : 'Vuelve pronto para ver sus novedades.' }}
+          @if (busqueda()) {
+            Prueba con otra palabra o quita el filtro de búsqueda.
+          } @else if (t.products_count > 0) {
+            Prueba con otra categoría de la tienda.
+          } @else {
+            Vuelve pronto para ver sus novedades.
+          }
         </p>
       </div>
     }

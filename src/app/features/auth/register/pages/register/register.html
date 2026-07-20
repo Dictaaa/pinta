@@ -148,6 +148,45 @@
         }
       </label>
 
+      <hr class="divider">
+
+      <!-- ══════════ REDES / CONTACTO (opcional) ══════════ -->
+      <p class="section-label">Contacto y redes (opcional)</p>
+      <p class="section-hint">
+        El WhatsApp es donde tus clientes te enviarán el comprobante de pago.
+      </p>
+
+      <label class="field" [class.invalid]="campoInvalido('whatsapp')">
+        <span class="field-label">WhatsApp de la tienda</span>
+        <input type="tel" formControlName="whatsapp" placeholder="3001234567" maxlength="10">
+        @if (campoInvalido('whatsapp')) {
+          <span class="field-hint">Celular colombiano de 10 dígitos</span>
+        }
+      </label>
+
+      <div class="field-row">
+        <label class="field">
+          <span class="field-label">Instagram</span>
+          <div class="field-prefix">
+            <span>&#64;</span>
+            <input type="text" formControlName="instagram" placeholder="modaluna">
+          </div>
+        </label>
+
+        <label class="field">
+          <span class="field-label">TikTok</span>
+          <div class="field-prefix">
+            <span>&#64;</span>
+            <input type="text" formControlName="tiktok" placeholder="modaluna">
+          </div>
+        </label>
+      </div>
+
+      <label class="field">
+        <span class="field-label">Facebook</span>
+        <input type="text" formControlName="facebook" placeholder="facebook.com/modaluna">
+      </label>
+
       <button type="submit" class="btn-submit" [disabled]="enviando()">
         @if (enviando()) {
           <span class="spinner" aria-hidden="true"></span>

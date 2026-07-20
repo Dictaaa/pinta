@@ -132,29 +132,48 @@
 
         <!-- Cantidad + CTA -->
         <div class="buy-row">
-          <div class="qty" role="group" aria-label="Cantidad">
-            <button (click)="cambiarCantidad(-1)" aria-label="Menos">−</button>
-            <span>{{ cantidad() }}</span>
-            <button (click)="cambiarCantidad(1)" aria-label="Más">+</button>
-          </div>
+         <!-- ═══ REEMPLAZAR el bloque .buy-row existente por esto ═══ -->
 
-          <button
-            class="btn-add"
-            [class.added]="agregado()"
-            (click)="agregarAlCarrito()">
-            {{ agregado() ? 'Agregado ✓' : 'Agregar al carrito' }}
-          </button>
+<!-- Cantidad -->
+<div class="qty" role="group" aria-label="Cantidad">
+  <button (click)="cambiarCantidad(-1)" aria-label="Menos">−</button>
+  <span>{{ cantidad() }}</span>
+  <button (click)="cambiarCantidad(1)" aria-label="Más">+</button>
+</div>
 
-          <button
-            class="btn-fav"
-            [class.on]="favorito()"
-            [attr.aria-pressed]="favorito()"
-            (click)="toggleFavorito()"
-            aria-label="Agregar a favoritos">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21.2l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"/>
-            </svg>
-          </button>
+<!-- Comprar ahora — protagonista -->
+<button class="btn-buy-now" (click)="comprarAhora()">
+  Comprar ahora
+</button>
+
+<!-- Agregar al carrito + favorito — secundarios -->
+<div class="secondary-row">
+  <button
+    class="btn-add"
+    [class.added]="agregado()"
+    (click)="agregarAlCarrito()">
+    @if (agregado()) {
+      <span>Agregado ✓</span>
+    } @else {
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+        <path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+      <span>Agregar al carrito</span>
+    }
+  </button>
+
+  <button
+    class="btn-fav"
+    [class.on]="favorito()"
+    [attr.aria-pressed]="favorito()"
+    (click)="toggleFavorito()"
+    aria-label="Agregar a favoritos">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21.2l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+    </svg>
+  </button>
+</div>
         </div>
 
         <!-- Confianza -->

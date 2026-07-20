@@ -1,0 +1,119 @@
+<div class="plan-page">
+
+  <header class="page-head">
+    <h1>Tu plan</h1>
+    <p class="page-sub">Elige el plan que mejor se ajuste al tamaño de tu tienda.</p>
+  </header>
+
+  @if (exito()) {
+    <p class="alert alert--ok" role="status">{{ exito() }}</p>
+  }
+  @if (error()) {
+    <p class="alert" role="alert">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <div class="cards-grid">
+      @for (i of [1,2,3]; track i) {
+        <div class="sk sk-card"></div>
+      }
+    </div>
+
+  } @else {
+
+    <!-- ══════════ USO DEL PLAN ACTUAL ══════════ -->
+    @if (actual(); as s) {
+      <section class="usage-panel">
+        <div class="usage-info">
+          <span class="usage-label">Plan actual</span>
+          <span class="usage-name">{{ s.plan.name }}</span>
+          <span class="usage-since">Desde el {{ fecha(s.starts_at) }}</span>
+        </div>
+        <div class="usage-bar-wrap">
+          <div class="usage-bar-head">
+            <span><b>{{ s.products_used ?? 0 }}</b> de {{ s.plan.product_limit }} productos</span>
+            <span>{{ usoPct() }}%</span>
+          </div>
+          <div class="usage-bar">
+            <div class="usage-bar__fill" [style.width.%]="usoPct()"></div>
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- ══════════ CARDS DE PLANES ══════════ -->
+    <div class="cards-grid">
+      @for (p of planes(); track p.id) {
+        <article class="plan-card" [class.plan-card--current]="esActual(p)">
+          @if (esActual(p)) {
+            <span class="current-badge">Tu plan actual</span>
+          }
+
+          <h2>{{ p.name }}</h2>
+          <p class="plan-price">{{ cop(p.monthly_price) }}</p>
+          @if (p.description) {
+            <p class="plan-desc">{{ p.description }}</p>
+          }
+
+          <ul class="plan-features">
+            <li><b>{{ p.product_limit }}</b> productos activos</li>
+            <li><b>{{ p.images_per_product }}</b> fotos por producto</li>
+            <li><b>{{ p.commission_percentage }}%</b> de comisión por venta</li>
+            @if (p.featured_products_limit > 0) {
+              <li><b>{{ p.featured_products_limit }}</b> productos destacados</li>
+            }
+          </ul>
+
+          <button
+            class="plan-btn"
+            [class.plan-btn--current]="esActual(p)"
+            [disabled]="esActual(p) || cambiando() === p.id"
+            (click)="cambiar(p)">
+            @if (cambiando() === p.id) {
+              <span class="spinner" aria-hidden="true"></span> Cambiando…
+            } @else if (esActual(p)) {
+              Plan actual
+            } @else if (esDowngrade(p)) {
+              Bajar a este plan
+            } @else {
+              Mejorar a este plan
+            }
+          </button>
+        </article>
+      }
+    </div>
+
+    <!-- ══════════ HISTORIAL ══════════ -->
+    @if (historial().length > 1) {
+      <section class="panel history">
+        <h2>Historial de cambios</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Plan</th>
+                <th>Desde</th>
+                <th>Hasta</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (h of historial(); track h.id) {
+                <tr>
+                  <td class="strong">{{ h.plan.name }}</td>
+                  <td class="muted">{{ fecha(h.starts_at) }}</td>
+                  <td class="muted">{{ h.ends_at ? fecha(h.ends_at) : '—' }}</td>
+                  <td>
+                    <span class="estado" [attr.data-estado]="h.status">
+                      {{ h.status === 'active' ? 'Activo' : h.status === 'canceled' ? 'Finalizado' : 'Expirado' }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+  }
+</div>

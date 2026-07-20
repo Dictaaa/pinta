@@ -31,4 +31,26 @@ export const ENDPOINTS = {
     PRODUCT: (slug: string, id: number | string) =>
       `/api/v1/shops/${slug}/products/${id}`,
   },
+
+  SUBSCRIPTIONS: {
+    PLANS: '/api/v1/subscriptions/plans',
+    MINE: '/api/v1/subscriptions/mine',
+    CHANGE: '/api/v1/subscriptions/change',
+  },
+
+  DASHBOARD: {
+    SUMMARY: '/api/v1/dashboard/summary',
+  },
+
+   CHECKOUT: {
+    SUBMIT: '/api/v1/checkout',
+  },
+
+   ORDERS: {
+    MINE: '/api/v1/orders/mine',
+    CONFIRM: (id: number | string) => `/api/v1/orders/${id}/confirm`,
+    REJECT: (id: number | string) => `/api/v1/orders/${id}/reject`,
+    SHIP: (id: number | string) => `/api/v1/orders/${id}/ship`,
+    DELIVER: (id: number | string) => `/api/v1/orders/${id}/deliver`,
+  },
 };

@@ -479,3 +479,71 @@ $ease: var(--p-ease);
   /* En mobile toda la card es tappable */
   .view-btn { display: none; }
 }
+
+/* ══════════ BUSCADOR DEL CATÁLOGO ══════════
+   Pegar en store.scss — usa las CSS vars globales
+   directamente, sin depender de $alias locales     */
+.store-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 0, 0, .045);
+  border-radius: 999px;
+  padding: 0 16px;
+  height: 44px;
+  margin-top: 24px;
+  transition: background .2s, box-shadow .2s cubic-bezier(.22, .61, .36, 1);
+
+  &:focus-within {
+    background: var(--p-surface, #FFFFFF);
+    box-shadow: var(--p-shadow-card, 0 1px 2px rgba(0,0,0,.03), 0 4px 12px rgba(0,0,0,.04));
+  }
+
+  svg {
+    flex-shrink: 0;
+    color: var(--p-text-2, #6E6E73);
+  }
+
+  input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 13.5px;
+    background: transparent;
+    color: var(--p-text, #1D1D1F);
+
+    &::placeholder {
+      color: var(--p-text-2, #6E6E73);
+    }
+
+    /* Quita el ícono nativo de "limpiar" en Chrome/Edge
+       para no duplicar con nuestro ícono de lupa */
+    &::-webkit-search-cancel-button {
+      -webkit-appearance: none;
+    }
+  }
+}
+
+/* ══════════ SCROLL PROGRESIVO (infinite scroll cliente) ══════════ */
+.scroll-sentinel {
+  height: 1px;
+}
+
+.loading-more {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.spinner--dark {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(0, 0, 0, .1);
+  border-top-color: var(--p-text, #1D1D1F);
+  animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

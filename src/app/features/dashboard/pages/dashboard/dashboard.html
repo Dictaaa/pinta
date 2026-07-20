@@ -1,83 +1,119 @@
-@if (auth.usuario(); as u) {
+@if (cargando()) {
+  <div class="dash">
+    <div class="sk sk-head"></div>
+    <div class="kpis">
+      @for (i of [1,2,3]; track i) {
+        <div class="sk sk-kpi"></div>
+      }
+    </div>
+    <div class="sk sk-panel"></div>
+  </div>
+
+} @else if (error()) {
+  <div class="dash">
+    <div class="empty">
+      <p class="empty-title">{{ error() }}</p>
+      <button class="btn-outline" (click)="cargar()">Reintentar</button>
+    </div>
+  </div>
+
+} @else if (resumen(); as r) {
   <div class="dash">
 
     <!-- ══════════ CABECERA ══════════ -->
     <header class="dash-head">
       <div>
-        <h1>Hola, {{ u.nombre }}</h1>
-        <a class="dash-url" [routerLink]="['/', u.tienda.slug]">
-          pinta.co/{{ u.tienda.slug }}
+        <h1>Hola, {{ auth.user()?.first_name }}</h1>
+        <a class="dash-url" [routerLink]="['/', r.shop.slug, 'catalogo']">
+          lapintaco.com/{{ r.shop.slug }}
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M7 17L17 7M8 7h9v9"/>
           </svg>
         </a>
       </div>
 
-      <div class="dash-actions">
-        <button class="btn-outline">
+      <!-- <div class="dash-actions">
+        <a class="btn-outline" [routerLink]="['/', r.shop.slug, 'productos']">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 5v14M5 12h14"/>
           </svg>
           Nuevo producto
-        </button>
+        </a>
         <button class="btn-logout" (click)="cerrarSesion()">Cerrar sesión</button>
-      </div>
+      </div> -->
     </header>
 
     <!-- ══════════ KPIs ══════════ -->
     <div class="kpis">
-      @for (kpi of kpis; track kpi.label) {
-        <article class="kpi">
-          <span class="kpi-label">{{ kpi.label }}</span>
-          <span class="kpi-valor">{{ kpi.valor }}</span>
-          @if (kpi.variacion !== 0) {
-            <span class="kpi-var" [class.down]="kpi.variacion < 0">
-              {{ kpi.variacion > 0 ? '↑' : '↓' }} {{ kpi.variacion < 0 ? -kpi.variacion : kpi.variacion }}% vs mes anterior
-            </span>
-          } @else {
-            <span class="kpi-var neutral">Sin cambios</span>
-          }
-        </article>
-      }
+      <article class="kpi">
+        <span class="kpi-label">Plan actual</span>
+        <span class="kpi-valor">{{ r.plan?.name ?? '—' }}</span>
+        @if (r.plan) {
+          <span class="kpi-var neutral">
+            {{ r.stats.products_active }} de {{ r.plan.product_limit }} productos usados
+          </span>
+        }
+      </article>
+
+      <article class="kpi">
+        <span class="kpi-label">Productos activos</span>
+        <span class="kpi-valor">{{ r.stats.products_active }}</span>
+        <span class="kpi-var neutral">{{ r.stats.products_total }} en total</span>
+      </article>
+
+      <article class="kpi">
+        <span class="kpi-label">Unidades vendidas</span>
+        <span class="kpi-valor">{{ r.stats.total_sold }}</span>
+        <span class="kpi-var neutral">
+          {{ r.stats.total_sold === 0 ? 'Aún sin ventas' : 'Histórico' }}
+        </span>
+      </article>
     </div>
+
+    @if (r.plan && usoPct() >= 80) {
+      <p class="alert">
+        Estás usando el {{ usoPct() }}% de tu plan {{ r.plan.name }}.
+        <a [routerLink]="['/', r.shop.slug, 'plan']">Mejora tu plan</a> para publicar más productos.
+      </p>
+    }
 
     <!-- ══════════ PEDIDOS RECIENTES ══════════ -->
     <section class="panel">
       <header class="panel-head">
         <h2>Pedidos recientes</h2>
-        <button class="link-all">Ver todos</button>
       </header>
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Pedido</th>
-              <th>Cliente</th>
-              <th>Producto</th>
-              <th class="hide-sm">Talla</th>
-              <th class="num">Total</th>
-              <th>Estado</th>
-              <th class="hide-sm">Fecha</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (p of pedidos; track p.id) {
+      @if (r.recent_orders.length === 0) {
+        <div class="empty small">
+          <p class="empty-title">Aún no tienes pedidos</p>
+          <p class="empty-text">
+            Cuando un cliente compre en tu tienda, sus pedidos aparecerán aquí.
+          </p>
+        </div>
+      } @else {
+        <div class="table-wrap">
+          <table>
+            <thead>
               <tr>
-                <td class="mono">{{ p.id }}</td>
-                <td>{{ p.cliente }}</td>
-                <td class="ellipsis">{{ p.producto }}</td>
-                <td class="hide-sm">{{ p.talla }}</td>
-                <td class="num strong">{{ cop(p.total) }}</td>
-                <td>
-                  <span class="estado" [attr.data-estado]="p.estado">{{ p.estado }}</span>
-                </td>
-                <td class="hide-sm muted">{{ p.fecha }}</td>
+                <th>Pedido</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th class="hide-sm">Fecha</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              @for (o of r.recent_orders; track o.id) {
+                <tr>
+                  <td class="mono">#{{ o.id }}</td>
+                  <td class="num strong">{{ cop(o.subtotal) }}</td>
+                  <td><span class="estado" [attr.data-estado]="o.status">{{ o.status }}</span></td>
+                  <td class="hide-sm muted">{{ o.created_at }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
     </section>
 
   </div>

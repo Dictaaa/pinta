@@ -299,3 +299,168 @@ $ease: var(--p-ease);
     gap: 0;
   }
 }
+
+/* ═══ AGREGAR al register.scss existente ═══ */
+
+/* Los 4 campos de nombre en 2x2 */
+.name-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  .field { margin-bottom: 12px; }
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  .field { margin-bottom: 12px; }
+}
+
+/* ── Logo + nombre de tienda en fila ── */
+.shop-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 4px;
+
+  .shop-name { flex: 1; }
+}
+
+.logo-picker {
+  flex-shrink: 0;
+  padding-top: 23px;   /* alinea con el input (alto del label) */
+}
+
+.logo-add {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--p-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--p-text-2);
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+
+  &:hover {
+    background: rgba(0, 0, 0, .07);
+    color: var(--p-text);
+  }
+
+  input { display: none; }
+}
+
+.logo-preview {
+  position: relative;
+  width: 72px;
+  height: 72px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .logo-remove {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--p-text);
+    color: #FFFFFF;
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .15s;
+
+    &:hover { transform: scale(1.1); }
+  }
+}
+
+/* ── Spinner (el mismo patrón del login) ── */
+.btn-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.spinner {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, .3);
+  border-top-color: #FFFFFF;
+  animation: spin .7s linear infinite;
+
+  &--dark {
+    width: 12px;
+    height: 12px;
+    border-color: rgba(0, 0, 0, .15);
+    border-top-color: var(--p-text);
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive: nombres en una columna en mobile */
+@media (max-width: 480px) {
+  .name-grid,
+  .field-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+/* ── Sección de redes / contacto ── */
+.section-label {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.section-hint {
+  font-size: 12px;
+  color: var(--p-text-2);
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+
+.field-prefix {
+  display: flex;
+  align-items: center;
+  background: var(--p-bg);
+  border-radius: 12px;
+  padding-left: 14px;
+
+  span {
+    font-size: 13.5px;
+    color: var(--p-text-2);
+    flex-shrink: 0;
+  }
+
+  input {
+    background: transparent;
+    padding-left: 2px;
+  }
+
+  &:focus-within {
+    box-shadow: 0 0 0 2px var(--p-text), var(--p-shadow-card);
+  }
+}

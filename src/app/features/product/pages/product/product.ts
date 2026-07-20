@@ -1,4 +1,5 @@
 // src/app/features/product/pages/product/product.ts
+import { Router } from '@angular/router';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -16,6 +17,7 @@ interface TiendaLigera {
 
 interface TallaDisponible {
   size_id: number | null;
+  variant_id: number;
   name: string;
   stock: number;
 }
@@ -33,6 +35,7 @@ export class Product {
   private storeCtx = inject(StoreContextService);
   private cart = inject(CartService);
   private shopService = inject(ShopService);
+  private router = inject(Router);
 
   /* ── Estado ─────────────────────────────────── */
   producto = signal<ApiProduct | null>(null);
@@ -55,6 +58,7 @@ export class Product {
   tallas = computed<TallaDisponible[]>(() =>
     (this.producto()?.variants ?? []).map(v => ({
       size_id: v.size_id,
+      variant_id: v.id, 
       name: v.size?.name ?? 'Única',
       stock: v.stock,
     })),
@@ -142,6 +146,7 @@ export class Product {
     this.cart.agregar(
       {
         productoId: p.id,
+        variantId: talla?.variant_id, 
         nombre: p.name,
         precio: Number(p.price),
         tiendaSlug: t.slug,
@@ -179,4 +184,32 @@ export class Product {
   imagenDe(p: ApiProduct): string | null {
     return p.images?.length ? p.images[0].url : null;
   }
+
+  comprarAhora(): void {
+  const p = this.producto();
+  const t = this.tienda();
+  if (!p || !t) return;
+ 
+  const talla = this.tallaSeleccionada();
+  if (!talla && this.tallas().length > 0) {
+    this.faltaTalla.set(true);
+    return;
+  }
+ 
+  this.cart.agregar(
+    {
+      productoId: p.id,
+      variantId: talla?.variant_id,
+      nombre: p.name,
+      precio: Number(p.price),
+      tiendaSlug: t.slug,
+      tiendaNombre: t.name,
+      talla: talla?.name,
+      imagen: p.images?.[0]?.url,
+    },
+    this.cantidad(),
+  );
+ 
+  this.router.navigate(['/checkout']);
+}
 }
