@@ -1,1 +1,0 @@
-import {p,G as h,I as v,R}from'./main-5B2K2JEI.js';var a=class r{api=p(h);getCatalog(t){return this.api.get(v.SHOPS.CATALOG(t))}getProduct(t,e){return this.api.get(v.SHOPS.PRODUCT(t,e))}static \u0275fac=function(e){return new(e||r)};static \u0275prov=R({token:r,factory:r.\u0275fac,providedIn:"root"})};export{a};
